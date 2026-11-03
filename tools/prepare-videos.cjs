@@ -14,12 +14,13 @@ const files = fs.readdirSync(input).filter(name => /^\d+[-_].*\.mp4$/i.test(name
 // Trechos escolhidos após inspeção dos cinco originais, em segundos.
 const edits = {
   '1_recepcao.mp4': { start: 0.8, duration: 3.5 },
-  '2_sala_nicia.mp4': { start: 3.1, duration: 4.5 },
+  '2_sala_nicia.mp4': { start: 3.0, duration: 7.0 },
   '3_segunda_recepcao.mp4': { start: 3.8, duration: 4.5 },
   '4_sala_operacao_marcelo.mp4': { start: 0.3, duration: 3.9 },
   '5_sala_operacao_secundaria.mp4': { start: 0.2, duration: 3.5 }
 };
 for (const name of files) {
+  if (process.argv[2] && name !== process.argv[2]) continue;
   const edit = edits[name];
   if (!edit) throw new Error(`Selecione e confira o trecho de ${name} antes de exportar.`);
   execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', '-ss', String(edit.start), '-i', path.join(input, name), '-t', String(edit.duration),

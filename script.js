@@ -59,7 +59,6 @@ const autoplayButton = carousel.querySelector('[data-autoplay]');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 let currentSlide = 0;
 let userPaused = false;
-let hovered = carousel.matches(':hover');
 let focused = carousel.contains(document.activeElement);
 let inViewport = false;
 let pointerStart = null;
@@ -72,7 +71,7 @@ const playRequests = new WeakSet();
 videos.forEach(video => { video.autoplay = false; video.muted = true; });
 
 function canPlay() {
-  return !userPaused && !hovered && !focused && !pointerStart && inViewport
+  return !userPaused && !focused && !pointerStart && inViewport
     && !document.hidden && !motionPreference.matches && !playbackBlocked;
 }
 
@@ -184,9 +183,8 @@ autoplayButton.addEventListener('click', event => {
   userPaused = playbackBlocked ? false : !userPaused;
   playbackBlocked = false;
   if (!userPaused) {
-    // Retomar é uma ação explícita, mesmo com o botão ainda focado/sob o mouse.
+    // Retomar é uma ação explícita, mesmo com o botão ainda focado.
     focused = false;
-    hovered = false;
   }
   updateAutoplayButton();
   syncPlayback();
@@ -195,8 +193,6 @@ carousel.addEventListener('keydown', event => {
   const actions = { ArrowLeft: currentSlide - 1, ArrowRight: currentSlide + 1, Home: 0, End: slides.length - 1 };
   if (Object.hasOwn(actions, event.key)) { event.preventDefault(); showSlide(actions[event.key]); }
 });
-carousel.addEventListener('mouseenter', () => { hovered = true; syncPlayback(); });
-carousel.addEventListener('mouseleave', () => { hovered = false; syncPlayback(); });
 carousel.addEventListener('focusin', () => { focused = true; syncPlayback(); });
 carousel.addEventListener('focusout', event => {
   focused = carousel.contains(event.relatedTarget);

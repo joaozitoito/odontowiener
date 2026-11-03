@@ -54,16 +54,16 @@ Os cinco vídeos originais 2160 × 3840 permanecem intactos em `assets/videos/lo
 | Ordem | Arquivo | Trecho original | Duração final | Bytes web |
 | --- | --- | --- | --- | --- |
 | 1 | `1_recepcao.mp4` | 0,8–4,3 s | 3,5 s | 315.069 |
-| 2 | `2_sala_nicia.mp4` | 3,1–7,6 s | 4,5 s | 390.275 |
+| 2 | `2_sala_nicia.mp4` | 3,0–10,0 s | 7,0 s | 588.550 |
 | 3 | `3_segunda_recepcao.mp4` | 3,8–8,3 s | 4,5 s | 362.492 |
 | 4 | `4_sala_operacao_marcelo.mp4` | 0,3–4,2 s | 3,9 s | 301.180 |
 | 5 | `5_sala_operacao_secundaria.mp4` | 0,2–3,7 s | 3,5 s | 399.768 |
 
-Cópias em `assets/videos/web/`: H.264 540 × 960, 30 fps, yuv420p, sem áudio, faststart; total 1.768.784 bytes contra 223.184.166 bytes dos originais (redução de 99,2%). Posters em `assets/videos/posters/` vêm do segundo 1 de cada trecho. Não foram geradas imagens nem alterados rostos.
+Cópias em `assets/videos/web/`: H.264 540 × 960, 30 fps, yuv420p, sem áudio, faststart; total 1.967.059 bytes contra 223.184.166 bytes dos originais (redução de 99,1%). Posters em `assets/videos/posters/` vêm do segundo 1 de cada trecho. Não foram geradas imagens nem alterados rostos.
 
 Apenas o vídeo ativo reproduz, sem som e com `playsinline`. Somente ativo/próximo são antecipados no início, quando a História entra na tela. Avanço por `ended`, ciclo 1 → 2 → 3 → 4 → 5 → 1 e crossfade de opacidade. Vídeo indisponível mantém poster e avança ao próximo após quatro segundos, se a reprodução automática estiver permitida.
 
-A própria área do vídeo é um botão transparente acessível: toque/clique ou Espaço/Enter pausa e retoma. Há nome acessível, instruções para leitor de tela e foco visível. Setas, Home/End e swipe mudam o ambiente. Mouse, foco, gesto, saída do viewport e aba oculta interrompem a reprodução; uma retomada explícita permite continuar com o controle focado. A pausa explícita persiste na navegação manual.
+A própria área do vídeo é um botão transparente acessível: toque/clique ou Espaço/Enter pausa e retoma. Há nome acessível, instruções para leitor de tela e foco visível. Setas, Home/End e swipe mudam o ambiente. Foco, gesto, saída do viewport e aba oculta interrompem a reprodução; hover não pausa nem reinicia vídeos; uma retomada explícita permite continuar com o controle focado. A pausa explícita persiste na navegação manual.
 
 Movimento reduzido desativa autoplay e download inicial dos vídeos, mostrando posters; tocar/ativar o painel muda o ambiente manualmente. Sem JavaScript, o primeiro poster e a navegação da página continuam disponíveis.
 
@@ -74,7 +74,7 @@ node tools/prepare-demo.cjs
 python -m http.server 4174 --bind 127.0.0.1 --directory dist
 ~~~
 
-O conteúdo de `dist/` é a distribuição pública: 22 arquivos, sem vídeos originais, fontes JPEG dos tratamentos, ferramentas, testes, documentação ou node_modules. O pacote foi testado com servidor cuja raiz é somente `dist/`. Não precisa de Node.js no servidor. Use hospedagem estática que sirva HTML/CSS/JS/MP4; HTTP Range é recomendado. Google Fonts e o mapa precisam de internet, com fallbacks próprios.
+O conteúdo de `dist/` é a distribuição pública: 27 arquivos, sem vídeos originais, fontes JPEG dos tratamentos, ferramentas, testes, documentação ou node_modules. O pacote foi testado com servidor cuja raiz é somente `dist/`. Não precisa de Node.js no servidor. Use hospedagem estática que sirva HTML/CSS/JS/MP4; HTTP Range é recomendado. Google Fonts e o mapa precisam de internet, com fallbacks próprios.
 
 Não houve publicação, configuração de domínio ou contratação de serviço. Upload/deploy só após autorização.
 
@@ -109,3 +109,14 @@ As antigas pendências de endereço, 15 anos e registros/especialidades informad
 ## Git
 
 Remoto: `https://github.com/joaozitoito/odontowiener.git`. Alterações anteriores e seis exclusões locais de fotos antigas foram preservadas. Nenhum commit, push ou deploy foi feito. Antes de um commit futuro, revisar quais exclusões e originais pesados devem entrar no histórico; publicar somente o conteúdo de `dist/`.
+
+## Ajustes para release — 03/11/2026
+
+- Hover removido da lógica do carrossel. O ciclo completo foi testado com o cursor sobre a mídia.
+- Espaçamento horizontal da História: 120 px acima de 1100 px; 64 px em tablet horizontal; 32 px no layout de uma coluna. Proporção e largura do vídeo preservadas.
+- Nícia: trecho atualizado para 3,0–10,0 s, incluindo a logo. Somente esse vídeo web e seu poster foram regenerados.
+- Favicon: dente branco isolado por componente alfa da logo original `assets/logoodomto1.png`, sem texto ou recriação. PNGs transparentes 16/32/48/512 e ICO 16/32/48 em `assets/icons/`. Recriar no Windows com `powershell -File tools/prepare-favicon.ps1`. A distribuição inclui os ícones.
+- Smoke test local: `tools/check-release.js`, executado por Playwright MCP com Brave. Verifica ciclo em hover, trecho de sete segundos, 390/1440, mapa, WhatsApp e ícones. Capturas permanecem somente em artifacts, ignorado pelo Git.
+- Para a Vercel, use `node tools/prepare-demo.cjs` como preparação e `dist` como diretório de saída, sem framework. Não houve deploy.
+
+O relatório `docs/final-polish-report.md` descreve a etapa anterior; os ajustes de hover, favicon, espaçamento e trecho da Nícia desta seção o atualizam. Permanecem a confirmação de telefones/WhatsApp, responsável técnico e aprovação final do cliente.

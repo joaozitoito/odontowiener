@@ -32,6 +32,8 @@
 @media(prefers-reduced-motion:reduce){.history .slide{transition:none}.history .slide.video-ready video{opacity:0}}
 
 /* Acabamento V7: retratos conferidos individualmente, sem modificar as fotos. */
+@media(min-width:1101px){.history{column-gap:120px}}
+@media(min-width:801px) and (max-width:1100px){.history{column-gap:64px}}
 .team-marcelo img{object-position:50% 34%}
 .team-nicia img{object-position:50% 64%}
 .team-luciara img{object-position:50% 44%}
