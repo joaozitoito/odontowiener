@@ -1,51 +1,111 @@
 # Odonto Wiener
 
-Landing page estática em HTML5, CSS e JavaScript puro, sem dependências de execução ou build. Abra `index.html` no navegador. A fonte Inter é carregada do Google Fonts; sem internet, há fallback para Arial.
+Landing page estática em HTML5, CSS e JavaScript puro. Sem framework, build ou dependências de execução. Referência: [Figma V7](https://www.figma.com/design/wq469SScZfAepySnQRDQUo/Odonto-Wiener-%E2%80%94-Conceito-de-Nova-Landing-Page), desktop `138:2` e mobile `138:138`.
 
-## Implementado
+## Executar
 
-Header e menu mobile, hero, três tratamentos com mensagens específicas para WhatsApp, história com carrossel de quatro fotografias reais no lugar da imagem estática, equipe com quatro pessoas e contato/rodapé. O carrossel tem setas, indicadores, teclado (←, →, Home, End) e gesto horizontal de mouse/toque. Sem JavaScript, a primeira fotografia e a navegação continuam disponíveis. O site apenas abre o WhatsApp; o visitante confirma o envio.
+Abra `index.html`, ou use HTTP para testar nas condições de hospedagem:
 
-Referência: [Figma V7](https://www.figma.com/design/wq469SScZfAepySnQRDQUo/Odonto-Wiener-%E2%80%94-Conceito-de-Nova-Landing-Page), desktop `138:2` e mobile `138:138`, inspecionados via Figma. Cores, espaçamentos e hierarquia foram traduzidos para CSS responsivo. Fotos reais substituem reservas do protótipo; carrossel é o adicional contratado. As imagens dos tratamentos ainda não foram exportadas: os cards mantêm placeholders na proporção 400 × 248 do protótipo. Não houve substituição por imagens externas ou geradas.
+~~~sh
+python -m http.server 4173 --bind 127.0.0.1
+~~~
 
-## Antes de publicar
+Acesse [a página local](http://127.0.0.1:4173). A fonte Inter usa Google Fonts com fallback Arial e `font-display: swap`. Os links de WhatsApp abrem a conversa; o visitante confirma qualquer envio.
 
-- Validar telefone, WhatsApp e endereço. Dados centralizados no objeto `clinic` em `script.js`; o HTML contém fallback sem JavaScript e deve acompanhar alterações desses dados. O aviso de pendência é explícito nesta primeira versão.
-- Confirmar os 15 anos de história antes de reinserir essa afirmação no hero e na história.
-- Confirmar especialidade de Paula, registros profissionais e responsável técnico. Não foi criado quinto integrante.
-- Confirmar uso das fotos, enquadramentos e textos institucionais. Todas as quatro fotos do carrossel e quatro retratos já estão presentes. Faltam as três imagens de tratamentos, listadas abaixo.
-- Comparar o resultado renderizado com a V7 nos tamanhos 390, 768 e 1440 px, em especial cortes das fotos, logo e quebras dos títulos. A retirada da afirmação dos 15 anos altera as quebras do hero.
+## Acabamento final
 
-## Verificação e continuidade
+Textos recuperados diretamente do Figma MCP: “15 ANOS DE HISTÓRIA EM PELOTAS”, “Há 15 anos cuidando do seu sorriso.” e “15 anos de história. Uma clínica familiar.”. Os demais títulos, descrições e CTAs foram conferidos. A informação dos 15 anos está confirmada pelo cliente. Estrutura, imagem e CSS original do hero foram preservados.
 
-O ambiente desta entrega não disponibiliza Git nem um repositório `.git` nesta pasta. O remoto informado pelo usuário é `https://github.com/joaozitoito/odontowiener.git`. Não há branch ou commit local para informar; commit/push continuam pendentes até disponibilizar Git e o checkout correto. Nenhuma hospedagem foi configurada.
+A equipe permanece com quatro integrantes, sem inclusão de Igor:
 
-Os arquivos importantes ficam nesta pasta. Imagens originais foram preservadas em `assets/fotos` e logos em `assets`. Imagens do Figma são armazenadas em `assets/images` e ícones em `assets/icons`, sem URLs temporárias no site.
+| Integrante | Informação confirmada |
+| --- | --- |
+| Dr. Marcelo Wiener | Ortodontista e Clínico Geral · CRO/RS 12980 |
+| Nícia Wiener | Psicologia · CRP/RS 07/41467 |
+| Luciara | Recepcionista, preservada como já estava |
+| Dra. Paula Menezes | Endodontista · CRO/RS 26040 |
 
-## Imagens disponíveis e exportações pendentes
+As fotografias originais não foram modificadas. Os enquadramentos usam regras individuais de `object-position`: Marcelo 50% 34%; Nícia 50% 64%; Luciara 50% 44%; Paula 50% 38%. Os cards mantêm a proporção 294/288.
 
-Arquivos locais existentes, preservados:
-- Logos: `assets/logo1.png` (utilizado) e `assets/logoodomto1.png`.
-- Equipe: `assets/fotos/equipe/marcelo_wiener.jpg`, `nicia_wiener.jpg`, `luciara.jpg`, `paula.jpg`.
-- Ambientes, em `assets/fotos/local/`: `fachada.jpeg`, `recepção (entrada).jpeg` (hero), `recepção2.jpeg`, `recepção2 quadros.jpeg`, `corredor_entre_recepcao.jpeg`, `consultorionicia.jpeg`, `consultorionicia (2).jpeg`.
-- Referências locais: `assets/referencia/desktop.png` e `assets/referencia/mobile.png`.
+## Imagens de tratamentos
 
-Exportar manualmente do Figma V7, preservando o enquadramento e confirmando a licença/autorização de uso das fotografias do protótipo:
+Exports originais do Figma MCP preservados em 400 × 248, com fontes JPEG em `assets/images/originals/`. Não há placeholders ou URLs temporárias no runtime.
 
-| Elemento desktop | Node | Colocar em | Proporção |
-| --- | --- | --- | --- |
-| Foto — Implantes | `138:39` | `assets/images/implantes.png` | 400 × 248 |
-| Foto — Próteses | `138:48` | `assets/images/proteses.png` | 400 × 248 |
-| Foto — Ortodontia | `138:57` | `assets/images/ortodontia.png` | 400 × 248 |
+| Tratamento | Nó | Arquivo usado |
+| --- | --- | --- |
+| Implantes | `138:39` | `assets/images/implantes.png` |
+| Próteses | `138:48` | `assets/images/proteses.png` |
+| Ortodontia | `138:57` | `assets/images/ortodontia.png` |
 
-Pode exportar a 2× (800 × 496). Ao colocar os arquivos nesses caminhos e recarregar, o JavaScript exibe as imagens carregadas com sucesso. Arquivos ausentes ou inválidos mantêm o placeholder sem alterar a composição. Sem JavaScript, os placeholders permanecem. A seta dos CTAs usa o caractere acessível decorativo ↗; não depende do SVG indisponível. Não são necessárias outras exportações para este ajuste.
+## Google Maps
 
-## Carrossel da História — requisitos atualizados
+Endereço confirmado: Rua Quinze de Novembro, 707 — Pelotas/RS. O site exibe a redação do Figma: Rua Quinze de Novembro, 707, Pelotas, Rio Grande do Sul.
 
-Está dentro de `#clinica .history`, no lugar da foto estática, sem seção extra. Mantém a coluna e a altura original de 440 px no desktop e 280 px no mobile. Fotos: fachada, recepção com quadros, corredor e consultório de Nícia. As imagens usam `object-fit: cover`; conferir os recortes visualmente.
+O iframe veio do menu Compartilhar → Incorporar um mapa do próprio Google Maps. O painel oficial identifica o número 707 e lista Odonto Wiener em “Neste lugar”. O marcador usa as coordenadas -31.7659118, -52.3404258 e o identificador oficial do endereço, sem chave de API própria ou serviço pago.
 
-Avanço automático a cada 5 segundos, transição de opacidade de 500 ms, setas, indicadores, teclado e swipe. Botão para pausar/retomar. Mouse sobre a área, foco dentro dela, gesto em andamento, aba oculta ou carrossel fora do viewport interrompem o temporizador. Ao liberar uma pausa temporária ou interagir manualmente, inicia-se um novo período inteiro de 5 segundos; não há avanço acumulado. A pausa explícita persiste até o usuário retomar. O botão retomar não anula a pausa enquanto ainda houver foco/mouse sobre a área.
+Mapa com `loading="lazy"`, título acessível, zoom, movimentação e bordas do card preservadas. A área mede 440 px de altura no desktop e 300 px no mobile. Um link externo e uma orientação permanecem disponíveis se a incorporação for bloqueada. Por ser conteúdo de outro domínio, não se tenta inferir o sucesso do mapa apenas pelo evento `load`.
 
-Com `prefers-reduced-motion: reduce`, autoplay e transição ficam desativados; navegação manual continua. Alterações dessa preferência em tempo de execução também são respeitadas. Sem IntersectionObserver, mantém apenas a reprodução manual. Avanços automáticos não são anunciados repetidamente ao leitor de tela.
+## Carrossel final da História
 
-Verificação desta revisão: conferência estática da localização do carrossel, quatro slides/indicadores, referências locais, arquivos existentes e regras de temporização/pausa. Não houve teste funcional executado em navegador: Chrome headless falhou na inicialização do processo gráfico. Permanecem pendentes testes reais de autoplay/pausas, swipe, teclado, leitor de tela, carregamento dos exports e comparação visual em 390, 768 e 1440 px. Não há alegação de aprovação desses testes.
+Somente em `#clinica .history > .carousel`. A versão anterior foi substituída nesta rodada por autorização expressa do usuário. Sem nomes, legendas, setas, indicadores ou botões decorados. Painel vertical 9:16, com 340 px de largura máxima no desktop e 300 px até 800 px de viewport, mantendo o enquadramento completo e eliminando faixas laterais.
+
+Os cinco vídeos originais 2160 × 3840 permanecem intactos em `assets/videos/local/`. Foram inspecionados com contact sheets de FFmpeg e selecionados os seguintes trechos:
+
+| Ordem | Arquivo | Trecho original | Duração final | Bytes web |
+| --- | --- | --- | --- | --- |
+| 1 | `1_recepcao.mp4` | 0,8–4,3 s | 3,5 s | 315.069 |
+| 2 | `2_sala_nicia.mp4` | 3,1–7,6 s | 4,5 s | 390.275 |
+| 3 | `3_segunda_recepcao.mp4` | 3,8–8,3 s | 4,5 s | 362.492 |
+| 4 | `4_sala_operacao_marcelo.mp4` | 0,3–4,2 s | 3,9 s | 301.180 |
+| 5 | `5_sala_operacao_secundaria.mp4` | 0,2–3,7 s | 3,5 s | 399.768 |
+
+Cópias em `assets/videos/web/`: H.264 540 × 960, 30 fps, yuv420p, sem áudio, faststart; total 1.768.784 bytes contra 223.184.166 bytes dos originais (redução de 99,2%). Posters em `assets/videos/posters/` vêm do segundo 1 de cada trecho. Não foram geradas imagens nem alterados rostos.
+
+Apenas o vídeo ativo reproduz, sem som e com `playsinline`. Somente ativo/próximo são antecipados no início, quando a História entra na tela. Avanço por `ended`, ciclo 1 → 2 → 3 → 4 → 5 → 1 e crossfade de opacidade. Vídeo indisponível mantém poster e avança ao próximo após quatro segundos, se a reprodução automática estiver permitida.
+
+A própria área do vídeo é um botão transparente acessível: toque/clique ou Espaço/Enter pausa e retoma. Há nome acessível, instruções para leitor de tela e foco visível. Setas, Home/End e swipe mudam o ambiente. Mouse, foco, gesto, saída do viewport e aba oculta interrompem a reprodução; uma retomada explícita permite continuar com o controle focado. A pausa explícita persiste na navegação manual.
+
+Movimento reduzido desativa autoplay e download inicial dos vídeos, mostrando posters; tocar/ativar o painel muda o ambiente manualmente. Sem JavaScript, o primeiro poster e a navegação da página continuam disponíveis.
+
+## Distribuição estática
+
+~~~sh
+node tools/prepare-demo.cjs
+python -m http.server 4174 --bind 127.0.0.1 --directory dist
+~~~
+
+O conteúdo de `dist/` é a distribuição pública: 22 arquivos, sem vídeos originais, fontes JPEG dos tratamentos, ferramentas, testes, documentação ou node_modules. O pacote foi testado com servidor cuja raiz é somente `dist/`. Não precisa de Node.js no servidor. Use hospedagem estática que sirva HTML/CSS/JS/MP4; HTTP Range é recomendado. Google Fonts e o mapa precisam de internet, com fallbacks próprios.
+
+Não houve publicação, configuração de domínio ou contratação de serviço. Upload/deploy só após autorização.
+
+Para recriar os vídeos/posters, `tools/prepare-videos.cjs` usa FFmpeg e os trechos aprovados acima. Defina `ODONTO_FFMPEG` com o executável instalado, ou instale a ferramenta local opcional `ffmpeg-static@5.3.0` com `npm install --no-save --package-lock=false ffmpeg-static@5.3.0`. Nada disso é carregado pelo site.
+
+## Testes desta rodada — 03/11/2026
+
+Playwright MCP lançou explicitamente Brave 156.0.8078.80. Scripts ativos (`browser_run_code_unsafe`, argumento `filename` com caminho absoluto):
+
+- `tools/check-final-contract.js`: requisitos principais; falhou antes da implementação e passou depois.
+- `tools/check-final-layout.js`: 390/768/1440 px, textos, equipe, mídia, WhatsApp, menu, mapa, console/rede e screenshots.
+- `tools/check-final-media.js`: ciclo natural completo, duração/ordem, pausa, teclado, toque, swipe e movimento reduzido.
+- `tools/check-final-maps.js`: incorporação, endereço, zoom, movimentação e fallback.
+- `tools/check-final-resilience.js`: falha de mídia, bloqueio de autoplay, viewport, aba oculta simulada e ausência de JavaScript.
+- `tools/check-dist.js`: distribuição em servidor isolado, todos os assets, reprodução e CTA com nova aba interceptada.
+- `tools/capture-final-clips.js`: cinco enquadramentos desktop/mobile com reprodução real antes de capturar.
+
+Verificações locais: `python tools/check-integrity.py`, `node --check script.js`, `git diff --check`. O baseline desta rodada está em `artifacts/final-polish/baseline.json` e verifica originais byte a byte. Os testes da UI anterior ficam preservados em `tools/archive/`; suas expectativas de setas/legendas e vídeos de 10 s são históricas e não integram a suíte atual.
+
+Caminhos do Brave, screenshots e porta 4173 estão explícitos nos testes; adapte em outra máquina. Capturas atuais: `artifacts/final-polish/screenshots/`. [Relatório atual](docs/final-polish-report.md). O relatório `docs/delivery-report.md` registra a etapa anterior.
+
+## Pendências reais
+
+- Confirmar telefone e WhatsApp. Foram preservados os números do Figma; o aviso se refere agora somente aos telefones.
+- Confirmar o responsável técnico antes de atribuir essa função a alguém.
+- Aprovação final de textos, imagens e recortes pelo cliente.
+- Teste físico em iPhone/Safari e com leitor de tela não foi realizado. A aba oculta foi simulada no headless.
+- Retratos originais da equipe somam aproximadamente 14 MB; otimização de arquivos permanece uma melhoria separada. Os originais e seus rostos foram preservados.
+
+As antigas pendências de endereço, 15 anos e registros/especialidades informados foram resolvidas pelo briefing confirmado desta rodada.
+
+## Git
+
+Remoto: `https://github.com/joaozitoito/odontowiener.git`. Alterações anteriores e seis exclusões locais de fotos antigas foram preservadas. Nenhum commit, push ou deploy foi feito. Antes de um commit futuro, revisar quais exclusões e originais pesados devem entrar no histórico; publicar somente o conteúdo de `dist/`.

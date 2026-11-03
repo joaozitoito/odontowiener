@@ -5,20 +5,22 @@
 @media(max-width:800px){.container{width:calc(100% - 48px)}.header{min-height:76px;position:relative;flex-wrap:wrap}.logo{width:140px;height:60px}.menu-toggle{display:flex;align-items:center;gap:12px;min-height:44px;background:#fff;border:0;color:var(--navy);font-size:14px}.menu-toggle span{font-size:24px}.header nav{width:100%;flex-direction:column;align-items:stretch;padding-bottom:24px;gap:8px}.header nav>a:not(.button){padding:12px}.js .header nav{display:none}.js .header nav.is-open{display:flex}.hero{grid-template-columns:1fr;gap:32px;padding-top:36px;padding-bottom:48px}.hero-copy{gap:20px}.hero h1{font-size:44px;letter-spacing:-1.3px;max-width:500px}.lead{font-size:16px}.hero-photo{height:300px}.hero-copy .button{width:100%}.section{padding-block:56px}h2{font-size:32px;letter-spacing:-.5px}.section-heading{margin-bottom:32px}.treatments{grid-template-columns:1fr;gap:36px}.treatments h3{font-size:24px}.history{grid-template-columns:1fr;gap:32px}.history>.carousel{height:280px;order:2}.history>.history-copy{order:1}.team{gap:24px 16px}.team h3{font-size:16px}.team p{font-size:13px}.contact{grid-template-columns:1fr;gap:32px}.contact .button{width:100%}.map-placeholder{min-height:300px;padding:20px}.map-card{padding:16px}.footer{padding-block:36px}.footer-top{flex-direction:column;gap:8px}.footer nav{flex-wrap:wrap;padding:0;gap:20px;margin-bottom:24px}.slide img{height:300px}.dots{gap:0}.carousel-controls{gap:4px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 
-/* Reservas com as mesmas proporções dos cards da V7. */
-.treatment-media{position:relative;aspect-ratio:400/248;margin-bottom:22px;border-radius:10px;overflow:hidden;background:#edf3fa;border:1px solid var(--line)}
+/* Fotos originais com a proporção dos cards da V7. */
+.treatment-media{position:relative;aspect-ratio:400/248;margin-bottom:22px;border-radius:10px;overflow:hidden;background:#edf3fa}
 .treatment-media .treatment-photo{position:absolute;inset:0;width:100%;height:100%;margin:0}
-.treatment-photo[hidden]{display:none}
-.image-placeholder{height:100%;display:flex;align-items:center;justify-content:center;padding:24px;color:var(--muted);font-size:14px;text-align:center}
-.image-placeholder[hidden]{display:none}
 /* O carrossel ocupa somente a reserva fotográfica da História. */
-.history>.carousel{position:relative;min-width:0;width:100%;height:440px;overflow:hidden;border-radius:12px;background:#edf3fa}
+.history>.carousel{position:relative;min-width:0;width:min(100%,340px);height:auto;aspect-ratio:9/16;justify-self:center;overflow:hidden;border-radius:12px;background:var(--tint)}
 .history .slides{display:block;position:relative;width:100%;height:100%}
 .history .slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity 500ms ease,visibility 500ms;pointer-events:none}
 .history .slide:first-child{opacity:1;visibility:visible}
 .history .enhanced .slide{opacity:0;visibility:hidden}
 .history .enhanced .slide.is-active{opacity:1;visibility:visible;pointer-events:auto}
-.history .slide img{width:100%;height:100%;object-fit:cover;border-radius:0}
+.history .slide .video-poster,.history .slide video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:0;background:var(--tint)}
+.history .slide video{opacity:0;transition:opacity 200ms ease;pointer-events:none}
+.history .slide.video-ready video{opacity:1}
+.history .video-fallback{position:absolute;inset:60px 12px auto;margin:0;padding:8px 12px;background:#fff;border-radius:8px;font-size:12px;text-align:center}
+.video-fallback[hidden]{display:none}
+.history .carousel-controls,.history .autoplay-toggle{z-index:2}
 .history .slide figcaption{position:absolute;top:12px;left:12px;background:#fff;padding:6px 10px;border-radius:6px;font-size:12px;max-width:calc(100% - 24px)}
 .history .carousel-controls{position:absolute;bottom:54px;left:12px;right:12px;margin:0;padding:2px 6px;border-radius:12px;background:rgba(255,255,255,.96);gap:0}
 .history .dots{gap:0}
@@ -26,5 +28,23 @@
 .autoplay-toggle[hidden]{display:none}
 .autoplay-toggle:disabled{cursor:default}
 .history .carousel:focus-visible{outline-offset:-4px}
-@media(max-width:800px){.history>.carousel{height:280px}}
-@media(prefers-reduced-motion:reduce){.history .slide{transition:none}}
+@media(max-width:800px){.history>.carousel{height:auto;width:min(100%,300px)}}
+@media(prefers-reduced-motion:reduce){.history .slide{transition:none}.history .slide.video-ready video{opacity:0}}
+
+/* Acabamento V7: retratos conferidos individualmente, sem modificar as fotos. */
+.team-marcelo img{object-position:50% 34%}
+.team-nicia img{object-position:50% 64%}
+.team-luciara img{object-position:50% 44%}
+.team-paula img{object-position:50% 38%}
+.team article{min-width:0}
+.professional-registration{display:inline-block;margin-top:6px;font-size:12px}
+.map-embed{height:440px;border-radius:12px;overflow:hidden;background:#eaf2fb}
+.map-embed iframe{display:block;width:100%;height:100%;border:0}
+.map-card>.text-link{margin-top:8px}
+.map-help{font-size:12px;margin:0;line-height:1.5}
+/* Controle sem decoração: a própria área do vídeo é o botão de pausa. */
+.carousel-toggle{position:absolute;inset:0;z-index:2;width:100%;height:100%;padding:0;border:0;border-radius:12px;background:transparent;color:inherit;touch-action:pan-y}
+.carousel-toggle[hidden]{display:none}
+.carousel-toggle:focus-visible{outline-offset:-5px}
+@media(max-width:800px){.map-embed{height:300px}}
+@media(max-width:360px){.team h3{min-height:2.6em}}

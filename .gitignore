@@ -1,0 +1,7 @@
+node_modules/
+.playwright-mcp/
+dist/
+assets/videos/local/
+artifacts/
+__pycache__/
+*.pyc

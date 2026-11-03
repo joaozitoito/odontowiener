@@ -1,13 +1,14 @@
 'use strict';
 
-// Dados fornecidos no briefing, ainda sujeitos à validação pela clínica.
+// Endereço, 15 anos e registros confirmados no briefing de acabamento.
+// Telefones e responsável técnico continuam pendentes.
 const clinic = Object.freeze({
   whatsapp: '5553981298471',
   whatsappLabel: '(53) 98129-8471',
   phone: '+555333051999',
   phoneLabel: '(53) 3305-1999',
-  address: 'Rua Quinze de Novembro, 707, Pelotas/RS',
-  confirmed: false
+  address: 'Rua Quinze de Novembro, 707, Pelotas, Rio Grande do Sul',
+  confirmed: Object.freeze({ address: true, historyYears: true, registrations: true, phones: false, technicalDirector: false })
 });
 
 document.querySelectorAll('[data-whatsapp]').forEach(link => {
@@ -28,8 +29,6 @@ document.querySelectorAll('[data-address]').forEach(element => { element.textCon
 document.querySelectorAll('[data-map]').forEach(link => {
   link.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address)}`;
 });
-const mapAddress = document.querySelector('.map-placeholder > p');
-if (mapAddress) mapAddress.textContent = clinic.address;
 
 const menuButton = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#navegacao');
@@ -51,18 +50,10 @@ document.addEventListener('click', event => { if (!event.target.closest('.header
 window.matchMedia('(max-width: 800px)').addEventListener('change', () => closeMenu());
 document.documentElement.classList.add('js');
 
-// Mostrar a imagem exportada somente após carregamento válido; manter a reserva em caso de erro.
-document.querySelectorAll('.treatment-media').forEach(media => {
-  const image = media.querySelector('img');
-  const placeholder = media.querySelector('.image-placeholder');
-  image.addEventListener('load', () => { image.hidden = false; placeholder.hidden = true; });
-  image.addEventListener('error', () => { image.hidden = true; placeholder.hidden = false; });
-  if (image.complete && image.naturalWidth > 0) { image.hidden = false; placeholder.hidden = true; }
-});
-
-const carousel = document.querySelector('.carousel');
+// Restrito à História: o hero não participa da reprodução.
+const carousel = document.querySelector('#clinica .history > .carousel');
 const slides = [...carousel.querySelectorAll('.slide')];
-const dots = [...carousel.querySelectorAll('.dots button')];
+const videos = slides.map(slide => slide.querySelector('video'));
 const slideStatus = carousel.querySelector('[data-slide-status]');
 const autoplayButton = carousel.querySelector('[data-autoplay]');
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -71,93 +62,178 @@ let userPaused = false;
 let hovered = carousel.matches(':hover');
 let focused = carousel.contains(document.activeElement);
 let inViewport = false;
-let timer = null;
 let pointerStart = null;
+let fallbackTimer = null;
+let playbackBlocked = false;
+let swiped = false;
+const playRequests = new WeakSet();
 
-function scheduleAutoplay() {
-  window.clearTimeout(timer);
-  timer = null;
-  if (userPaused || hovered || focused || pointerStart || !inViewport || document.hidden || motionPreference.matches) return;
-  timer = window.setTimeout(() => {
-    showSlide(currentSlide + 1, false);
-    scheduleAutoplay();
-  }, 5000);
+// Sem src até a História entrar na tela; autoplay nunca vale para os inativos.
+videos.forEach(video => { video.autoplay = false; video.muted = true; });
+
+function canPlay() {
+  return !userPaused && !hovered && !focused && !pointerStart && inViewport
+    && !document.hidden && !motionPreference.matches && !playbackBlocked;
 }
+
+function loadVideo(index) {
+  const video = videos[index];
+  if (video.hasAttribute('src') || video.error) return;
+  video.preload = 'auto';
+  video.src = video.dataset.src;
+  video.load();
+}
+
+function prepareVideos() {
+  if (!inViewport || document.hidden || motionPreference.matches) return;
+  loadVideo(currentSlide);
+  // Só antecipar o próximo depois de o atual ter um quadro decodificado.
+  if (videos[currentSlide].readyState >= 2 || videos[currentSlide].error) {
+    loadVideo((currentSlide + 1) % videos.length);
+  }
+}
+
+function updateAutoplayButton() {
+  autoplayButton.setAttribute('aria-label', motionPreference.matches
+    ? 'Próximo ambiente da clínica'
+    : playbackBlocked ? 'Reproduzir vídeo'
+      : userPaused ? 'Retomar vídeos da clínica' : 'Pausar vídeos da clínica');
+  if (motionPreference.matches) autoplayButton.removeAttribute('aria-pressed');
+  else autoplayButton.setAttribute('aria-pressed', String(userPaused));
+}
+
+function syncPlayback() {
+  window.clearTimeout(fallbackTimer);
+  fallbackTimer = null;
+  videos.forEach((video, index) => {
+    if (index !== currentSlide || !canPlay()) video.pause();
+  });
+  prepareVideos();
+  if (!canPlay()) return;
+  const video = videos[currentSlide];
+  if (video.error) {
+    // Apenas falhas usam um prazo fixo. Vídeos válidos avançam por ended.
+    fallbackTimer = window.setTimeout(() => showSlide(currentSlide + 1, false), 4000);
+    return;
+  }
+  if (video.ended) { showSlide(currentSlide + 1, false); return; }
+  if (!video.hasAttribute('src') || playRequests.has(video) || !video.paused) return;
+  playRequests.add(video);
+  video.play().then(() => {
+    if (video !== videos[currentSlide] || !canPlay()) video.pause();
+  }).catch(error => {
+    if (error.name === 'NotAllowedError' && video === videos[currentSlide]) {
+      playbackBlocked = true;
+      updateAutoplayButton();
+    }
+    // AbortError é esperado se o visitante navegar antes de play() resolver.
+  }).finally(() => {
+    playRequests.delete(video);
+    if (video === videos[currentSlide] && canPlay() && video.paused && !video.error) syncPlayback();
+  });
+}
+
 function showSlide(index, announce = true) {
+  videos[currentSlide].pause();
   currentSlide = (index + slides.length) % slides.length;
+  const video = videos[currentSlide];
+  playbackBlocked = false;
+  if (video.readyState >= 1) video.currentTime = 0;
+  else video.dataset.restart = 'true';
   slides.forEach((slide, position) => {
     const active = position === currentSlide;
     slide.classList.toggle('is-active', active);
     slide.setAttribute('aria-hidden', String(!active));
     slide.inert = !active;
   });
-  dots.forEach((dot, position) => {
-    if (position === currentSlide) dot.setAttribute('aria-current', 'true');
-    else dot.removeAttribute('aria-current');
-  });
-  // Avanços automáticos não geram anúncios repetitivos para leitores de tela.
-  if (announce) slideStatus.textContent = `Fotografia ${currentSlide + 1} de ${slides.length}: ${slides[currentSlide].querySelector('figcaption').textContent}`;
-}
-function manualSlide(index) {
-  showSlide(index);
-  scheduleAutoplay();
-}
-function updateAutoplayButton() {
-  autoplayButton.disabled = motionPreference.matches;
-  autoplayButton.textContent = motionPreference.matches
-    ? 'Reprodução automática desativada: movimento reduzido'
-    : userPaused ? 'Retomar reprodução automática' : 'Pausar reprodução automática';
-}
-autoplayButton.addEventListener('click', () => {
-  userPaused = !userPaused;
+  if (announce) slideStatus.textContent = `Ambiente ${currentSlide + 1} de ${slides.length}: ${slides[currentSlide].querySelector('img').alt}`;
   updateAutoplayButton();
-  scheduleAutoplay();
+  syncPlayback();
+}
+
+videos.forEach((video, index) => {
+  video.addEventListener('loadedmetadata', () => {
+    if (video.dataset.restart) { video.currentTime = 0; delete video.dataset.restart; }
+  });
+  video.addEventListener('loadeddata', () => {
+    slides[index].classList.add('video-ready');
+    if (index === currentSlide) syncPlayback();
+  });
+  video.addEventListener('ended', () => {
+    if (index === currentSlide && canPlay()) showSlide(currentSlide + 1, false);
+  });
+  video.addEventListener('error', () => {
+    slides[index].classList.remove('video-ready');
+    if (index === currentSlide) {
+      slideStatus.textContent = 'Vídeo indisponível. A imagem deste ambiente permanece disponível.';
+      syncPlayback();
+    }
+  });
+  // Rede lenta mantém o poster até um quadro estar disponível.
+  video.addEventListener('waiting', () => {
+    if (video.readyState < 2) slides[index].classList.remove('video-ready');
+  });
+  video.addEventListener('playing', () => slides[index].classList.add('video-ready'));
 });
-carousel.querySelector('[data-previous]').addEventListener('click', () => manualSlide(currentSlide - 1));
-carousel.querySelector('[data-next]').addEventListener('click', () => manualSlide(currentSlide + 1));
-dots.forEach((dot, index) => dot.addEventListener('click', () => manualSlide(index)));
+
+autoplayButton.addEventListener('click', event => {
+  // Ignorar só o clique de ponteiro gerado pelo gesto, nunca Espaço/Enter.
+  if (swiped && event.detail > 0) { swiped = false; return; }
+  swiped = false;
+  if (motionPreference.matches) { showSlide(currentSlide + 1); return; }
+  userPaused = playbackBlocked ? false : !userPaused;
+  playbackBlocked = false;
+  if (!userPaused) {
+    // Retomar é uma ação explícita, mesmo com o botão ainda focado/sob o mouse.
+    focused = false;
+    hovered = false;
+  }
+  updateAutoplayButton();
+  syncPlayback();
+});
 carousel.addEventListener('keydown', event => {
   const actions = { ArrowLeft: currentSlide - 1, ArrowRight: currentSlide + 1, Home: 0, End: slides.length - 1 };
-  if (Object.hasOwn(actions, event.key)) { event.preventDefault(); manualSlide(actions[event.key]); }
+  if (Object.hasOwn(actions, event.key)) { event.preventDefault(); showSlide(actions[event.key]); }
 });
-carousel.addEventListener('mouseenter', () => { hovered = true; scheduleAutoplay(); });
-carousel.addEventListener('mouseleave', () => { hovered = false; scheduleAutoplay(); });
-carousel.addEventListener('focusin', () => { focused = true; scheduleAutoplay(); });
+carousel.addEventListener('mouseenter', () => { hovered = true; syncPlayback(); });
+carousel.addEventListener('mouseleave', () => { hovered = false; syncPlayback(); });
+carousel.addEventListener('focusin', () => { focused = true; syncPlayback(); });
 carousel.addEventListener('focusout', event => {
   focused = carousel.contains(event.relatedTarget);
-  scheduleAutoplay();
+  syncPlayback();
 });
-document.addEventListener('visibilitychange', scheduleAutoplay);
-motionPreference.addEventListener('change', () => { updateAutoplayButton(); scheduleAutoplay(); });
+document.addEventListener('visibilitychange', syncPlayback);
+motionPreference.addEventListener('change', () => { updateAutoplayButton(); syncPlayback(); });
 if ('IntersectionObserver' in window) {
   const observer = new IntersectionObserver(entries => {
     inViewport = entries[0].isIntersecting;
-    scheduleAutoplay();
-  });
+    syncPlayback();
+  }, { threshold: 0.15 });
   observer.observe(carousel);
-} // Sem suporte, mantém navegação manual e evita autoplay fora da tela.
+} // Sem suporte, posters e navegação manual continuam disponíveis.
 const slideArea = carousel.querySelector('.slides');
 slideArea.addEventListener('pointerdown', event => {
   if (!event.isPrimary || event.button !== 0) return;
+  swiped = false;
   pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
-  slideArea.setPointerCapture(event.pointerId);
-  scheduleAutoplay();
+  event.target.setPointerCapture(event.pointerId);
+  syncPlayback();
 });
 slideArea.addEventListener('pointerup', event => {
   if (!pointerStart || pointerStart.id !== event.pointerId) return;
   const deltaX = event.clientX - pointerStart.x;
   const deltaY = event.clientY - pointerStart.y;
   pointerStart = null;
-  if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) manualSlide(currentSlide + (deltaX < 0 ? 1 : -1));
-  else scheduleAutoplay();
+  if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+    swiped = true;
+    showSlide(currentSlide + (deltaX < 0 ? 1 : -1));
+  }
+  else syncPlayback();
 });
-function cancelSwipe() { pointerStart = null; scheduleAutoplay(); }
+function cancelSwipe() { pointerStart = null; syncPlayback(); }
 slideArea.addEventListener('pointercancel', cancelSwipe);
 slideArea.addEventListener('lostpointercapture', cancelSwipe);
 slideArea.addEventListener('dragstart', event => event.preventDefault());
 carousel.classList.add('enhanced');
-carousel.querySelector('.carousel-controls').hidden = false;
 autoplayButton.hidden = false;
-updateAutoplayButton();
 showSlide(0, false);
-scheduleAutoplay();
