@@ -98,7 +98,7 @@ Caminhos do Brave, screenshots e porta 4173 estão explícitos nos testes; adapt
 
 ## Pendências reais
 
-- Confirmar telefone e WhatsApp. Foram preservados os números do Figma; o aviso se refere agora somente aos telefones.
+- Confirmar telefone e WhatsApp. Foram preservados os números do Figma; a pendência é interna e não aparece na interface.
 - Confirmar o responsável técnico antes de atribuir essa função a alguém.
 - Aprovação final de textos, imagens e recortes pelo cliente.
 - Teste físico em iPhone/Safari e com leitor de tela não foi realizado. A aba oculta foi simulada no headless.
@@ -108,7 +108,7 @@ As antigas pendências de endereço, 15 anos e registros/especialidades informad
 
 ## Git
 
-Remoto: `https://github.com/joaozitoito/odontowiener.git`. Alterações anteriores e seis exclusões locais de fotos antigas foram preservadas. Nenhum commit, push ou deploy foi feito. Antes de um commit futuro, revisar quais exclusões e originais pesados devem entrar no histórico; publicar somente o conteúdo de `dist/`.
+Remoto: `https://github.com/joaozitoito/odontowiener.git`. Alterações anteriores e seis exclusões locais de fotos antigas foram preservadas. Checkpoints e correções foram enviados ao GitHub; nenhum deploy foi feito. Antes de um commit futuro, revisar quais exclusões e originais pesados devem entrar no histórico; publicar somente o conteúdo de `dist/`.
 
 ## Ajustes para release — 03/11/2026
 
@@ -120,3 +120,11 @@ Remoto: `https://github.com/joaozitoito/odontowiener.git`. Alterações anterior
 - Para a Vercel, use `node tools/prepare-demo.cjs` como preparação e `dist` como diretório de saída, sem framework. Não houve deploy.
 
 O relatório `docs/final-polish-report.md` descreve a etapa anterior; os ajustes de hover, favicon, espaçamento e trecho da Nícia desta seção o atualizam. Permanecem a confirmação de telefones/WhatsApp, responsável técnico e aprovação final do cliente.
+
+## Limpeza final de conteúdo público — 03/11/2026
+
+Auditoria do HTML, JavaScript e página renderizada encontrou dois avisos internos públicos: “Telefones pendentes de confirmação pela clínica.” e “Responsável técnico a confirmar com a clínica.”. Ambos foram removidos sem substituir por dados não confirmados. Telefones, profissionais, registros e conteúdo aprovado permanecem intactos.
+
+Comentários e flags internos do JavaScript não são renderizados. A orientação de fallback do Maps e as instruções acessíveis do carrossel são conteúdo funcional para o visitante, não pendências de desenvolvimento; foram preservadas. Não há promessa de recurso futuro na página.
+
+As confirmações de contatos e responsável técnico permanecem apenas como pendências administrativas nesta documentação, junto à aprovação final. Nenhuma informação foi inventada. Teste rápido: `tools/check-content.js` via Playwright MCP com Brave, usando servidor isolado de dist na porta 4174. Verifica conteúdo público, links, mídia, mapa, console e layout em 390/1440 px.
