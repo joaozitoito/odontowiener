@@ -17,10 +17,10 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       card.querySelector('img').getAttribute('src').split('/').pop()
     ]));
     check(JSON.stringify(team) === JSON.stringify([
-      ['Dr. Marcelo Wiener', 'Ortodontia • Invisalign Doctor', 'CRO/RS 12980', 'marcelo_wiener.jpg'],
-      ['Nícia Wiener', 'Psicologia', 'CRP/RS 07/41467', 'nicia_wiener.jpg'],
-      ['Luciara', 'Recepcionista', '', 'luciara.jpg'],
-      ['Dra. Paula Menezes', 'Endodontia e Harmonização Facial', 'CRO/RS 26040', 'paula.jpg'],
+      ['Dr. Marcelo Wiener', 'Ortodontia • Invisalign Doctor', 'CRO/RS 12980', 'marcelo_wiener-web.jpg'],
+      ['Nícia Wiener', 'Psicologia', 'CRP/RS 07/41467', 'nicia_wiener-web.jpg'],
+      ['Luciara', 'Recepcionista', '', 'luciara-web.jpg'],
+      ['Dra. Paula Menezes', 'Endodontia e Harmonização Facial', 'CRO/RS 26040', 'paula-web.jpg'],
       ['Dr. Igor Guimarães', 'Cirurgia Bucomaxilofacial e Implantodontia', 'CRO/RS 25036', 'igor-web.jpg']
     ]), 'Ordem, nomes, fotos, especialidades e registros da equipe');
 

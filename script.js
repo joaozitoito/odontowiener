@@ -1,14 +1,11 @@
 'use strict';
 
-// Endereço, 15 anos e registros confirmados no briefing de acabamento.
-// Telefones e responsável técnico continuam pendentes.
 const clinic = Object.freeze({
   whatsapp: '5553981298471',
   whatsappLabel: '(53) 98129-8471',
   phone: '+555333051999',
   phoneLabel: '(53) 3305-1999',
-  address: 'Rua Quinze de Novembro, 707, Pelotas, Rio Grande do Sul',
-  confirmed: Object.freeze({ address: true, historyYears: true, registrations: true, phones: false, technicalDirector: false })
+  address: 'Rua Quinze de Novembro, 707, Pelotas, Rio Grande do Sul'
 });
 
 const treatmentMessages = Object.freeze({
