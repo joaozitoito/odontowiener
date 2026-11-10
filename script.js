@@ -11,11 +11,15 @@ const clinic = Object.freeze({
   confirmed: Object.freeze({ address: true, historyYears: true, registrations: true, phones: false, technicalDirector: false })
 });
 
+const treatmentMessages = Object.freeze({
+  'implantes-e-cirurgias': 'Olá! Gostaria de saber mais sobre implantes e cirurgias.',
+  'proteses-e-ortodontia': 'Olá! Gostaria de saber mais sobre próteses fixas e removíveis e ortodontia geral.',
+  'tratamento-de-canal': 'Olá! Gostaria de saber mais sobre o tratamento de canal.'
+});
+
 document.querySelectorAll('[data-whatsapp]').forEach(link => {
-  const treatment = link.dataset.whatsapp;
-  const message = treatment
-    ? `Olá! Gostaria de saber mais sobre o tratamento de ${treatment}.`
-    : 'Olá! Gostaria de conversar sobre o agendamento de uma consulta.';
+  const message = treatmentMessages[link.dataset.whatsapp]
+    ?? 'Olá! Gostaria de conversar sobre o agendamento de uma consulta.';
   link.href = `https://wa.me/${clinic.whatsapp}?text=${encodeURIComponent(message)}`;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
@@ -50,186 +54,100 @@ document.addEventListener('click', event => { if (!event.target.closest('.header
 window.matchMedia('(max-width: 800px)').addEventListener('change', () => closeMenu());
 document.documentElement.classList.add('js');
 
-// Restrito à História: o hero não participa da reprodução.
 const carousel = document.querySelector('#clinica .history > .carousel');
-const slides = [...carousel.querySelectorAll('.slide')];
-const videos = slides.map(slide => slide.querySelector('video'));
+const slideArea = carousel.querySelector('.slides');
+const slides = [...slideArea.querySelectorAll('.slide')];
 const slideStatus = carousel.querySelector('[data-slide-status]');
-const autoplayButton = carousel.querySelector('[data-autoplay]');
-const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+const instructions = carousel.querySelector('#carousel-instructions');
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const rotationDelay = 4000;
 let currentSlide = 0;
-let userPaused = false;
-let focused = carousel.contains(document.activeElement);
-let inViewport = false;
 let pointerStart = null;
-let fallbackTimer = null;
-let playbackBlocked = false;
-let swiped = false;
-const playRequests = new WeakSet();
-
-// Sem src até a História entrar na tela; autoplay nunca vale para os inativos.
-videos.forEach(video => { video.autoplay = false; video.muted = true; });
-
-function canPlay() {
-  return !userPaused && !focused && !pointerStart && inViewport
-    && !document.hidden && !motionPreference.matches && !playbackBlocked;
-}
-
-function loadVideo(index) {
-  const video = videos[index];
-  if (video.hasAttribute('src') || video.error) return;
-  video.preload = 'auto';
-  video.src = video.dataset.src;
-  video.load();
-}
-
-function prepareVideos() {
-  if (!inViewport || document.hidden || motionPreference.matches) return;
-  loadVideo(currentSlide);
-  // Só antecipar o próximo depois de o atual ter um quadro decodificado.
-  if (videos[currentSlide].readyState >= 2 || videos[currentSlide].error) {
-    loadVideo((currentSlide + 1) % videos.length);
-  }
-}
-
-function updateAutoplayButton() {
-  autoplayButton.setAttribute('aria-label', motionPreference.matches
-    ? 'Próximo ambiente da clínica'
-    : playbackBlocked ? 'Reproduzir vídeo'
-      : userPaused ? 'Retomar vídeos da clínica' : 'Pausar vídeos da clínica');
-  if (motionPreference.matches) autoplayButton.removeAttribute('aria-pressed');
-  else autoplayButton.setAttribute('aria-pressed', String(userPaused));
-}
-
-function syncPlayback() {
-  window.clearTimeout(fallbackTimer);
-  fallbackTimer = null;
-  videos.forEach((video, index) => {
-    if (index !== currentSlide || !canPlay()) video.pause();
-  });
-  prepareVideos();
-  if (!canPlay()) return;
-  const video = videos[currentSlide];
-  if (video.error) {
-    // Apenas falhas usam um prazo fixo. Vídeos válidos avançam por ended.
-    fallbackTimer = window.setTimeout(() => showSlide(currentSlide + 1, false), 4000);
-    return;
-  }
-  if (video.ended) { showSlide(currentSlide + 1, false); return; }
-  if (!video.hasAttribute('src') || playRequests.has(video) || !video.paused) return;
-  playRequests.add(video);
-  video.play().then(() => {
-    if (video !== videos[currentSlide] || !canPlay()) video.pause();
-  }).catch(error => {
-    if (error.name === 'NotAllowedError' && video === videos[currentSlide]) {
-      playbackBlocked = true;
-      updateAutoplayButton();
-    }
-    // AbortError é esperado se o visitante navegar antes de play() resolver.
-  }).finally(() => {
-    playRequests.delete(video);
-    if (video === videos[currentSlide] && canPlay() && video.paused && !video.error) syncPlayback();
-  });
-}
+let rotationTimer;
 
 function showSlide(index, announce = true) {
-  videos[currentSlide].pause();
   currentSlide = (index + slides.length) % slides.length;
-  const video = videos[currentSlide];
-  playbackBlocked = false;
-  if (video.readyState >= 1) video.currentTime = 0;
-  else video.dataset.restart = 'true';
   slides.forEach((slide, position) => {
     const active = position === currentSlide;
     slide.classList.toggle('is-active', active);
     slide.setAttribute('aria-hidden', String(!active));
     slide.inert = !active;
   });
-  if (announce) slideStatus.textContent = `Ambiente ${currentSlide + 1} de ${slides.length}: ${slides[currentSlide].querySelector('img').alt}`;
-  updateAutoplayButton();
-  syncPlayback();
+  if (announce) {
+    const description = slides[currentSlide].querySelector('img').alt;
+    slideStatus.textContent = `Fotografia ${currentSlide + 1} de ${slides.length}: ${description}`;
+  }
 }
 
-videos.forEach((video, index) => {
-  video.addEventListener('loadedmetadata', () => {
-    if (video.dataset.restart) { video.currentTime = 0; delete video.dataset.restart; }
-  });
-  video.addEventListener('loadeddata', () => {
-    slides[index].classList.add('video-ready');
-    if (index === currentSlide) syncPlayback();
-  });
-  video.addEventListener('ended', () => {
-    if (index === currentSlide && canPlay()) showSlide(currentSlide + 1, false);
-  });
-  video.addEventListener('error', () => {
-    slides[index].classList.remove('video-ready');
-    if (index === currentSlide) {
-      slideStatus.textContent = 'Vídeo indisponível. A imagem deste ambiente permanece disponível.';
-      syncPlayback();
-    }
-  });
-  // Rede lenta mantém o poster até um quadro estar disponível.
-  video.addEventListener('waiting', () => {
-    if (video.readyState < 2) slides[index].classList.remove('video-ready');
-  });
-  video.addEventListener('playing', () => slides[index].classList.add('video-ready'));
-});
+function canRotate() {
+  if (document.hidden || reducedMotion.matches) return false;
+  const { top, right, bottom, left, width, height } = carousel.getBoundingClientRect();
+  return width > 0 && height > 0 && top < window.innerHeight && bottom > 0
+    && left < window.innerWidth && right > 0;
+}
 
-autoplayButton.addEventListener('click', event => {
-  // Ignorar só o clique de ponteiro gerado pelo gesto, nunca Espaço/Enter.
-  if (swiped && event.detail > 0) { swiped = false; return; }
-  swiped = false;
-  if (motionPreference.matches) { showSlide(currentSlide + 1); return; }
-  userPaused = playbackBlocked ? false : !userPaused;
-  playbackBlocked = false;
-  if (!userPaused) {
-    // Retomar é uma ação explícita, mesmo com o botão ainda focado.
-    focused = false;
+function syncRotation() {
+  if (!canRotate()) {
+    window.clearTimeout(rotationTimer);
+    rotationTimer = undefined;
+    carousel.classList.remove('is-rotating');
+    return;
   }
-  updateAutoplayButton();
-  syncPlayback();
-});
+  if (rotationTimer !== undefined) return;
+  carousel.classList.add('is-rotating');
+  rotationTimer = window.setTimeout(() => {
+    rotationTimer = undefined;
+    if (!canRotate()) {
+      carousel.classList.remove('is-rotating');
+      return;
+    }
+    showSlide(currentSlide + 1, false);
+    syncRotation();
+  }, rotationDelay);
+}
+
 carousel.addEventListener('keydown', event => {
   const actions = { ArrowLeft: currentSlide - 1, ArrowRight: currentSlide + 1, Home: 0, End: slides.length - 1 };
-  if (Object.hasOwn(actions, event.key)) { event.preventDefault(); showSlide(actions[event.key]); }
+  if (!Object.hasOwn(actions, event.key)) return;
+  event.preventDefault();
+  showSlide(actions[event.key]);
 });
-carousel.addEventListener('focusin', () => { focused = true; syncPlayback(); });
-carousel.addEventListener('focusout', event => {
-  focused = carousel.contains(event.relatedTarget);
-  syncPlayback();
-});
-document.addEventListener('visibilitychange', syncPlayback);
-motionPreference.addEventListener('change', () => { updateAutoplayButton(); syncPlayback(); });
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => {
-    inViewport = entries[0].isIntersecting;
-    syncPlayback();
-  }, { threshold: 0.15 });
-  observer.observe(carousel);
-} // Sem suporte, posters e navegação manual continuam disponíveis.
-const slideArea = carousel.querySelector('.slides');
+
 slideArea.addEventListener('pointerdown', event => {
-  if (!event.isPrimary || event.button !== 0) return;
-  swiped = false;
+  if (!event.isPrimary || event.button !== 0 || pointerStart) return;
   pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
-  event.target.setPointerCapture(event.pointerId);
-  syncPlayback();
+  slideArea.setPointerCapture(event.pointerId);
 });
 slideArea.addEventListener('pointerup', event => {
-  if (!pointerStart || pointerStart.id !== event.pointerId) return;
+  if (pointerStart?.id !== event.pointerId) return;
   const deltaX = event.clientX - pointerStart.x;
   const deltaY = event.clientY - pointerStart.y;
   pointerStart = null;
   if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
-    swiped = true;
     showSlide(currentSlide + (deltaX < 0 ? 1 : -1));
   }
-  else syncPlayback();
 });
-function cancelSwipe() { pointerStart = null; syncPlayback(); }
+function cancelSwipe(event) {
+  if (pointerStart?.id === event.pointerId) pointerStart = null;
+}
 slideArea.addEventListener('pointercancel', cancelSwipe);
 slideArea.addEventListener('lostpointercapture', cancelSwipe);
 slideArea.addEventListener('dragstart', event => event.preventDefault());
-carousel.classList.add('enhanced');
-autoplayButton.hidden = false;
+
 showSlide(0, false);
+carousel.classList.add('enhanced');
+carousel.tabIndex = 0;
+carousel.setAttribute('aria-describedby', instructions.id);
+instructions.hidden = false;
+
+window.addEventListener('scroll', syncRotation, { passive: true });
+window.addEventListener('resize', syncRotation);
+window.addEventListener('pageshow', syncRotation);
+reducedMotion.addEventListener('change', syncRotation);
+document.addEventListener('visibilitychange', syncRotation);
+if (typeof IntersectionObserver === 'function') {
+  // Mudanças de layout podem mover o carrossel sem rolagem ou redimensionamento.
+  const carouselObserver = new IntersectionObserver(syncRotation);
+  carouselObserver.observe(carousel);
+}
+syncRotation();

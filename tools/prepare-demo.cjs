@@ -4,8 +4,9 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
 const files = ['index.html', 'style.css', 'script.js', 'assets/logo1.png',
-  'assets/fotos/local/recepção (entrada).jpeg'];
-for (const folder of ['assets/fotos/equipe', 'assets/images', 'assets/icons', 'assets/videos/web', 'assets/videos/posters']) {
+  'assets/images/implantes-cirurgias-web.jpg', 'assets/images/proteses-ortodontia-web.jpg',
+  'assets/images/tratamento-canal-web.jpg'];
+for (const folder of ['assets/fotos/local', 'assets/fotos/equipe', 'assets/icons']) {
   for (const name of fs.readdirSync(path.join(root, folder))) {
     const source = path.join(folder, name);
     if (fs.statSync(path.join(root, source)).isFile()) files.push(source);
