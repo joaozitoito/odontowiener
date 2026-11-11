@@ -51,6 +51,29 @@ document.addEventListener('click', event => { if (!event.target.closest('.header
 window.matchMedia('(max-width: 800px)').addEventListener('change', () => closeMenu());
 document.documentElement.classList.add('js');
 
+const revealItems = [...document.querySelectorAll(
+  '.section-heading, .treatments article, .history > .carousel, .history-copy, .team article, .map-card, .contact > div'
+)];
+revealItems.forEach((element, index) => {
+  element.classList.add('reveal-item');
+  element.style.setProperty('--reveal-delay', `${Math.min(index * 70, 220)}ms`);
+});
+
+if ('IntersectionObserver' in window) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+
+  revealItems.forEach((element) => revealObserver.observe(element));
+} else {
+  revealItems.forEach((element) => element.classList.add('is-visible'));
+}
+
 const carousel = document.querySelector('#clinica .history > .carousel');
 const slideArea = carousel.querySelector('.slides');
 const slides = [...slideArea.querySelectorAll('.slide')];
