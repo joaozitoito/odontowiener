@@ -6,9 +6,9 @@ O site usa HTML5, CSS e JavaScript puro. É um conjunto de arquivos estáticos, 
 
 ## Conteúdo atual
 
-- Os três cards aparecem na ordem **Implantes e Cirurgias**, **Próteses Fixas e Removíveis, Ortodontia Geral** e **Tratamento de Canal**.
+- Os seis cards aparecem na ordem **Aparelhos e Alinhadores Ortodônticos**, **Clareamento Dental**, **Facetas em Resina ou Porcelana**, **Implantes Dentários**, **Próteses Removíveis** e **Tratamento de Canal**. No desktop, a navegação mostra três cards por vez; no celular, todos aparecem em coluna.
 - A equipe tem cinco integrantes. Dr. Marcelo Wiener, Nícia Wiener, Luciara, Dra. Paula Menezes e Dr. Igor Guimarães.
-- A seção História exibe seis fotografias, da fachada à sala de espera, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Também aceita gesto de deslizar e teclado. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
+- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Também aceita gesto de deslizar e teclado. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
 
 ## Estrutura
 
@@ -57,7 +57,7 @@ Use um navegador moderno com JavaScript habilitado para o menu móvel, o carross
 ## Atualizar o conteúdo
 
 - **Textos e equipe** ficam em `index.html`. Ao trocar um retrato, mantenha o original em `assets/fotos/equipe/` e gere um JPEG web com cerca de 800 px de largura, preservando a proporção e o enquadramento. Atualize a referência e o texto alternativo quando necessário. Os recortes de exibição ficam em `style.css`.
-- **Tratamentos e clínica** usam as fotografias em `assets/images/` e `assets/fotos/local/`. Mantenha a ordem do carrossel no HTML. Se mudar um nome ou adicionar um arquivo público, atualize também a lista de distribuição em `tools/prepare-demo.cjs`.
+- **Tratamentos e clínica** usam as fotografias em `assets/images/` e `assets/fotos/local/`. Mantenha a ordem dos cards e do carrossel no HTML. Se mudar um nome ou adicionar um arquivo público, atualize também a lista de distribuição em `tools/prepare-demo.cjs`.
 - **Contato e WhatsApp** usam os dados de `clinic` e `treatmentMessages` em `script.js`. Ao trocar o endereço, sincronize também o texto de fallback e o iframe do mapa em `index.html`. Atualize os valores esperados nas verificações quando houver alteração aprovada de conteúdo.
 - **Favicon** pode ser regenerado no Windows com `powershell -File tools/prepare-favicon.ps1`. Depois de substituir os ícones, atualize o parâmetro de versão nas referências de `index.html`.
 - Regenere e valide `dist/` antes de enviar uma atualização ao provedor.

@@ -29,13 +29,14 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     const current = async () => active.getAttribute('aria-label');
     const orderedPhotos = [
       '1-fachada.jpeg', '2-recepção (entrada).jpeg', '3-consultorionicia (2).jpeg',
-      '4-consultorionicia.jpeg', '5-recepção2 quadros.jpeg', '6-recepção2.jpeg'
+      '4-consultorionicia.jpeg', '5-recepção2 quadros.jpeg', '6-recepção2.jpeg',
+      '7-sala-cirurgia.jpeg', '8-sala-raio-x.jpeg', '9-sala-cirurgia-2.jpeg', '10-esterilização.jpeg'
     ];
-    check(await p.locator('.history').evaluate(e => getComputedStyle(e).columnGap === '120px'), 'Espaçamento desktop da História');
+    check(await p.locator('.history').evaluate(e => getComputedStyle(e).columnGap === '64px'), 'Espaçamento desktop da História');
     check(await carousel.locator('button, [role="button"], .dots, figcaption, video').count() === 0, 'Carrossel sem controles e legendas');
     const filenames = await carousel.locator('img').evaluateAll(images => images.map(img => decodeURIComponent(img.src.split('/').pop())));
-    check(JSON.stringify(filenames) === JSON.stringify(orderedPhotos), 'Seis fotos na ordem numerada');
-    check(await current() === '1 de 6', 'Primeira foto inicial');
+    check(JSON.stringify(filenames) === JSON.stringify(orderedPhotos), 'Dez fotos na ordem numerada');
+    check(await current() === '1 de 10', 'Primeira foto inicial');
     check(await active.evaluate(e => parseFloat(getComputedStyle(e).transitionDuration) > 0), 'Transição entre as fotos');
     await carousel.evaluate(element => {
       window.carouselChanges = [];
@@ -51,8 +52,8 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     const initialSize = await carousel.boundingBox();
     await p.mouse.move(initialSize.x + initialSize.width / 2, initialSize.y + initialSize.height / 2);
     check(await carousel.evaluate(element => element.matches(':hover')), 'Mouse sobre a foto durante o autoplay');
-    for (const [index, position] of [2, 3, 4, 5, 6, 1].entries()) {
-      const label = position + ' de 6';
+    for (const [index, position] of [2, 3, 4, 5, 6, 7, 8, 9, 10, 1].entries()) {
+      const label = position + ' de 10';
       await p.waitForFunction(({ index, label }) => window.carouselChanges[index] === label, { index, label }, { timeout: 9000 });
       check(true, 'Avanço automático para a foto ' + position);
       const size = await carousel.boundingBox();
@@ -61,14 +62,14 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     await p.emulateMedia({ reducedMotion: 'reduce' });
     await carousel.press('Home');
     await p.waitForTimeout(4400);
-    check(await current() === '1 de 6' && await active.evaluate(e => getComputedStyle(e).transitionDuration === '0s'), 'Movimento reduzido desativa autoplay e transições');
+    check(await current() === '1 de 10' && await active.evaluate(e => getComputedStyle(e).transitionDuration === '0s'), 'Movimento reduzido desativa autoplay e transições');
     await carousel.focus();
-    for (const [key, label] of [['ArrowLeft', '6 de 6'], ['Home', '1 de 6'], ['ArrowRight', '2 de 6'], ['End', '6 de 6']]) {
+    for (const [key, label] of [['ArrowLeft', '10 de 10'], ['Home', '1 de 10'], ['ArrowRight', '2 de 10'], ['End', '10 de 10']]) {
       await p.keyboard.press(key);
       check(await current() === label, 'Navegação por ' + key);
     }
-    check((await carousel.locator('[data-slide-status]').textContent()).includes('6 de 6')
-      && await carousel.locator('.slide[aria-hidden="true"]').count() === 5, 'Anúncio acessível e ocultação dos slides inativos');
+    check((await carousel.locator('[data-slide-status]').textContent()).includes('10 de 10')
+      && await carousel.locator('.slide[aria-hidden="true"]').count() === 9, 'Anúncio acessível e ocultação dos slides inativos');
 
     const touch = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
     try {
@@ -83,11 +84,11 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       await send('touchStart', [{ x: center.x + 65, y: center.y }]);
       for (let shift = 45; shift >= -65; shift -= 22) await send('touchMove', [{ x: center.x + shift, y: center.y }]);
       await send('touchEnd', []);
-      check(await touch.locator('.slide.is-active').getAttribute('aria-label') === '2 de 6', 'Deslize em tela de toque');
+      check(await touch.locator('.slide.is-active').getAttribute('aria-label') === '2 de 10', 'Deslize em tela de toque');
       await send('touchStart', [{ x: center.x - 65, y: center.y }]);
       for (let shift = -45; shift <= 65; shift += 22) await send('touchMove', [{ x: center.x + shift, y: center.y }]);
       await send('touchEnd', []);
-      check(await touch.locator('.slide.is-active').getAttribute('aria-label') === '1 de 6', 'Deslize de volta em tela de toque');
+      check(await touch.locator('.slide.is-active').getAttribute('aria-label') === '1 de 10', 'Deslize de volta em tela de toque');
     } finally { await touch.close(); }
 
     const map = p.locator('.map-embed iframe');
@@ -97,7 +98,7 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     check(await p.locator('[data-whatsapp]').evaluateAll(es => es.every(e => new URL(e.href).pathname === '/5553981298471' && new URL(e.href).searchParams.get('text'))), 'Links e mensagens de WhatsApp');
     await p.locator('img[loading="lazy"]').evaluateAll(images => images.forEach(img => { img.loading = 'eager'; }));
     await p.waitForFunction(() => [...document.images].every(img => img.complete && img.naturalWidth > 0));
-    for (const [width, expectedRows] of [[1440, [5]], [1024, [3, 2]], [768, [3, 2]], [430, [1, 1, 1, 1, 1]], [390, [1, 1, 1, 1, 1]], [375, [1, 1, 1, 1, 1]], [320, [1, 1, 1, 1, 1]]]) {
+    for (const [width, expectedRows] of [[1440, [5]], [1024, [3, 2]], [801, [3, 2]], [800, [3, 2]], [768, [3, 2]], [430, [1, 1, 1, 1, 1]], [390, [1, 1, 1, 1, 1]], [375, [1, 1, 1, 1, 1]], [320, [1, 1, 1, 1, 1]]]) {
       await p.setViewportSize({ width, height: 1000 });
       const rows = await p.locator('.team article').evaluateAll(cards => {
         const byTop = Map.groupBy(cards, card => card.offsetTop);
@@ -105,6 +106,25 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       });
       check(JSON.stringify(rows) === JSON.stringify(expectedRows), width + ': distribuição da equipe ' + expectedRows.join(' + '));
       check(await p.evaluate(() => document.documentElement.scrollWidth === innerWidth), width + ': sem overflow horizontal');
+      const layout = await p.evaluate(() => {
+        const box = selector => document.querySelector(selector).getBoundingClientRect();
+        const columns = selector => getComputedStyle(document.querySelector(selector)).gridTemplateColumns.split(' ').length;
+        const treatmentViewport = box('.treatment-viewport');
+        const visibleTreatments = [...document.querySelectorAll('.treatments article')].filter(card => {
+          const bounds = card.getBoundingClientRect();
+          return bounds.left >= treatmentViewport.left - 1 && bounds.right <= treatmentViewport.right + 1;
+        }).length;
+        return {
+          columns: ['.history', '.contact'].map(columns),
+          visibleTreatments,
+          storyCopyFirst: box('.history-copy').bottom <= box('.carousel').top,
+          footerAligned: Math.abs(box('.footer-top').left - box('.hero').left) <= 1
+        };
+      });
+      check(JSON.stringify(layout.columns) === JSON.stringify(width <= 800 ? [1, 1] : [2, 2]), width + ': colunas da História e contato');
+      check(layout.visibleTreatments === (width <= 800 ? 6 : 3), width + ': quantidade de tratamentos visíveis');
+      check(layout.footerAligned, width + ': rodapé alinhado ao conteúdo');
+      if (width <= 800) check(layout.storyCopyFirst, width + ': texto da História antes do carrossel');
       check(await p.locator('.treatments article').evaluateAll(cards => cards.every(card => card.scrollWidth <= card.clientWidth)), width + ': tratamentos sem overflow');
       if (width === 1440 || width === 1024) {
         check(await p.locator('.treatments article > p').evaluateAll(paragraphs => paragraphs.every(p => p.offsetTop === paragraphs[0].offsetTop)), width + ': descrições dos tratamentos alinhadas');

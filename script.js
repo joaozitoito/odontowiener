@@ -9,8 +9,11 @@ const clinic = Object.freeze({
 });
 
 const treatmentMessages = Object.freeze({
-  'implantes-e-cirurgias': 'Olá! Gostaria de saber mais sobre implantes e cirurgias.',
-  'proteses-e-ortodontia': 'Olá! Gostaria de saber mais sobre próteses fixas e removíveis e ortodontia geral.',
+  'aparelhos-e-alinhadores-ortodonticos': 'Olá! Gostaria de saber mais sobre aparelhos e alinhadores ortodônticos.',
+  'clareamento-dental': 'Olá! Gostaria de saber mais sobre clareamento dental.',
+  'facetas-em-resina-ou-porcelana': 'Olá! Gostaria de saber mais sobre facetas em resina ou porcelana.',
+  'implantes-dentarios': 'Olá! Gostaria de saber mais sobre implantes dentários.',
+  'proteses-removiveis': 'Olá! Gostaria de saber mais sobre próteses removíveis.',
   'tratamento-de-canal': 'Olá! Gostaria de saber mais sobre o tratamento de canal.'
 });
 
@@ -81,6 +84,41 @@ const slideStatus = carousel.querySelector('[data-slide-status]');
 const instructions = carousel.querySelector('#carousel-instructions');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const rotationDelay = 4000;
+const treatmentViewport = document.querySelector('[data-treatment-viewport]');
+const treatmentCards = [...treatmentViewport.querySelectorAll('.treatments article')];
+const treatmentPrevious = document.querySelector('[data-treatment-prev]');
+const treatmentNext = document.querySelector('[data-treatment-next]');
+
+function updateTreatmentControls() {
+  if (window.matchMedia('(max-width: 800px)').matches) {
+    treatmentPrevious.disabled = true;
+    treatmentNext.disabled = true;
+    return;
+  }
+  const pageStart = treatmentCards[3].getBoundingClientRect().left
+    - treatmentCards[0].getBoundingClientRect().left;
+  const onSecondPage = treatmentViewport.scrollLeft >= pageStart - 1;
+  treatmentPrevious.disabled = !onSecondPage;
+  treatmentNext.disabled = onSecondPage;
+}
+
+function showTreatmentPage(page) {
+  if (window.matchMedia('(max-width: 800px)').matches) return;
+  const card = treatmentCards[page * 3];
+  const left = card.getBoundingClientRect().left
+    - treatmentViewport.getBoundingClientRect().left + treatmentViewport.scrollLeft;
+  treatmentViewport.scrollTo({ left, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+}
+
+treatmentPrevious.addEventListener('click', () => showTreatmentPage(0));
+treatmentNext.addEventListener('click', () => showTreatmentPage(1));
+treatmentViewport.addEventListener('scroll', updateTreatmentControls, { passive: true });
+window.matchMedia('(max-width: 800px)').addEventListener('change', () => {
+  treatmentViewport.scrollTo({ left: 0, behavior: 'auto' });
+  updateTreatmentControls();
+});
+updateTreatmentControls();
+
 let currentSlide = 0;
 let pointerStart = null;
 let rotationTimer;
