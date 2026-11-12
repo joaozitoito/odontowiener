@@ -7,14 +7,19 @@ const files = [
   'index.html', 'style.css', 'script.js', 'assets/logo1.png',
   'assets/icons/favicon.ico', 'assets/icons/favicon-16.png', 'assets/icons/favicon-32.png',
   'assets/icons/favicon-48.png', 'assets/icons/favicon-512.png',
-  'assets/images/implantes-cirurgias-web.jpg',
-  'assets/images/proteses-ortodontia-web.jpg',
+  'assets/images/aparelhos-e-alinhadores-ortodonticos.jpg',
+  'assets/images/clareamento-dental.jpg',
+  'assets/images/facetas-em-resina-ou-porcelana.jpg',
+  'assets/images/implantes-dentarios.jpg',
+  'assets/images/proteses-removiveis.jpg',
   'assets/images/tratamento-canal-web.jpg',
   'assets/fotos/equipe/marcelo_wiener-web.jpg', 'assets/fotos/equipe/nicia_wiener-web.jpg',
   'assets/fotos/equipe/luciara-web.jpg', 'assets/fotos/equipe/paula-web.jpg', 'assets/fotos/equipe/igor-web.jpg',
   'assets/fotos/local/1-fachada.jpeg', 'assets/fotos/local/2-recepção (entrada).jpeg',
   'assets/fotos/local/3-consultorionicia (2).jpeg', 'assets/fotos/local/4-consultorionicia.jpeg',
-  'assets/fotos/local/5-recepção2 quadros.jpeg', 'assets/fotos/local/6-recepção2.jpeg'
+  'assets/fotos/local/5-recepção2 quadros.jpeg', 'assets/fotos/local/6-recepção2.jpeg',
+  'assets/fotos/local/7-sala-cirurgia.jpeg', 'assets/fotos/local/8-sala-raio-x.jpeg',
+  'assets/fotos/local/9-sala-cirurgia-2.jpeg', 'assets/fotos/local/10-esterilização.jpeg'
 ];
 
 const workspace = fs.mkdtempSync(path.join(root, '.dist-'));
