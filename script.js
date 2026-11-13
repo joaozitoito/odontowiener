@@ -88,36 +88,119 @@ const treatmentViewport = document.querySelector('[data-treatment-viewport]');
 const treatmentCards = [...treatmentViewport.querySelectorAll('.treatments article')];
 const treatmentPrevious = document.querySelector('[data-treatment-prev]');
 const treatmentNext = document.querySelector('[data-treatment-next]');
+const treatmentMobile = window.matchMedia('(max-width: 800px)');
+const treatmentControls = treatmentPrevious.parentElement;
 
-function updateTreatmentControls() {
-  if (window.matchMedia('(max-width: 800px)').matches) {
-    treatmentPrevious.disabled = true;
-    treatmentNext.disabled = true;
-    return;
-  }
-  const pageStart = treatmentCards[3].getBoundingClientRect().left
-    - treatmentCards[0].getBoundingClientRect().left;
-  const onSecondPage = treatmentViewport.scrollLeft >= pageStart - 1;
-  treatmentPrevious.disabled = !onSecondPage;
-  treatmentNext.disabled = onSecondPage;
+const treatmentTrack = treatmentCards[0].parentElement;
+let treatmentCopies = [];
+let treatmentDrag = null;
+let suppressTreatmentClick = false;
+
+function treatmentStep() {
+  return treatmentCards[1].getBoundingClientRect().left - treatmentCards[0].getBoundingClientRect().left;
 }
 
-function showTreatmentPage(page) {
-  if (window.matchMedia('(max-width: 800px)').matches) return;
-  const card = treatmentCards[page * 3];
-  const left = card.getBoundingClientRect().left
-    - treatmentViewport.getBoundingClientRect().left + treatmentViewport.scrollLeft;
-  treatmentViewport.scrollTo({ left, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+function setupTreatments() {
+  treatmentCopies.forEach(card => card.remove());
+  treatmentCopies = [];
+  treatmentControls.hidden = treatmentMobile.matches || treatmentCards.length <= 3;
+  if (treatmentControls.hidden) return;
+  treatmentCards.forEach(card => card.classList.remove('reveal-item'));
+  const cloneCards = () => treatmentCards.map(card => {
+    const copy = card.cloneNode(true);
+    copy.setAttribute('aria-hidden', 'true');
+    copy.querySelectorAll('a').forEach(link => {
+      link.tabIndex = -1;
+      link.removeAttribute('data-whatsapp');
+    });
+    return copy;
+  });
+  const before = cloneCards();
+  const after = cloneCards();
+  treatmentTrack.prepend(...before);
+  treatmentTrack.append(...after);
+  treatmentCopies = [...before, ...after];
+  treatmentViewport.scrollTo({ left: treatmentStep() * treatmentCards.length, behavior: 'instant' });
 }
 
-treatmentPrevious.addEventListener('click', () => showTreatmentPage(0));
-treatmentNext.addEventListener('click', () => showTreatmentPage(1));
-treatmentViewport.addEventListener('scroll', updateTreatmentControls, { passive: true });
-window.matchMedia('(max-width: 800px)').addEventListener('change', () => {
-  treatmentViewport.scrollTo({ left: 0, behavior: 'auto' });
-  updateTreatmentControls();
+function normalizeTreatmentScroll() {
+  if (treatmentControls.hidden || treatmentDrag || treatmentSettleFrame !== undefined) return;
+  const cycle = treatmentStep() * treatmentCards.length;
+  const left = treatmentViewport.scrollLeft;
+  if (left >= cycle - 1 && left < cycle * 2 - 1) return;
+  const wrapped = ((left % cycle) + cycle) % cycle;
+  treatmentViewport.scrollTo({ left: cycle + wrapped, behavior: 'instant' });
+}
+
+function moveTreatment(direction) {
+  if (treatmentControls.hidden) return;
+  const step = treatmentStep();
+  const left = (Math.round(treatmentViewport.scrollLeft / step) + direction) * step;
+  treatmentViewport.scrollTo({ left, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+}
+
+treatmentPrevious.addEventListener('click', () => moveTreatment(-1));
+treatmentNext.addEventListener('click', () => moveTreatment(1));
+treatmentViewport.addEventListener('scrollend', normalizeTreatmentScroll);
+treatmentMobile.addEventListener('change', setupTreatments);
+window.addEventListener('resize', normalizeTreatmentScroll);
+setupTreatments();
+
+treatmentViewport.addEventListener('pointerdown', event => {
+  suppressTreatmentClick = false;
+  if (treatmentControls.hidden || event.pointerType !== 'mouse' || event.button !== 0) return;
+  cancelAnimationFrame(treatmentSettleFrame);
+  treatmentSettleFrame = undefined;
+  treatmentViewport.classList.remove('is-dragging');
+  treatmentDrag = { id: event.pointerId, x: event.clientX, left: treatmentViewport.scrollLeft };
 });
-updateTreatmentControls();
+treatmentViewport.addEventListener('dragstart', event => {
+  if (treatmentDrag) event.preventDefault();
+});
+window.addEventListener('pointermove', event => {
+  if (treatmentDrag?.id !== event.pointerId) return;
+  const distance = event.clientX - treatmentDrag.x;
+  if (!suppressTreatmentClick && Math.abs(distance) < 8) return;
+  suppressTreatmentClick = true;
+  treatmentViewport.classList.add('is-dragging');
+  treatmentViewport.scrollLeft = treatmentDrag.left - distance;
+});
+let treatmentSettleFrame;
+function settleTreatment(left) {
+  cancelAnimationFrame(treatmentSettleFrame);
+  const start = treatmentViewport.scrollLeft;
+  const delta = left - start;
+  const started = performance.now();
+  const duration = reducedMotion.matches ? 0 : 280;
+
+  function frame(now) {
+    const progress = duration ? Math.min(1, (now - started) / duration) : 1;
+    const eased = 1 - (1 - progress) ** 3;
+    treatmentViewport.scrollLeft = start + delta * eased;
+    if (progress < 1) {
+      treatmentSettleFrame = requestAnimationFrame(frame);
+      return;
+    }
+    treatmentSettleFrame = undefined;
+    treatmentViewport.classList.remove('is-dragging');
+    normalizeTreatmentScroll();
+  }
+  treatmentSettleFrame = requestAnimationFrame(frame);
+}
+
+function finishTreatmentDrag(event) {
+  if (treatmentDrag?.id !== event.pointerId) return;
+  treatmentDrag = null;
+  if (!suppressTreatmentClick) return;
+  const step = treatmentStep();
+  settleTreatment(Math.round(treatmentViewport.scrollLeft / step) * step);
+}
+window.addEventListener('pointerup', finishTreatmentDrag);
+window.addEventListener('pointercancel', finishTreatmentDrag);
+treatmentViewport.addEventListener('click', event => {
+  if (suppressTreatmentClick && event.detail > 0) event.preventDefault();
+  suppressTreatmentClick = false;
+}, true);
 
 let currentSlide = 0;
 let pointerStart = null;
@@ -134,11 +217,15 @@ function showSlide(index, announce = true) {
   if (announce) {
     const description = slides[currentSlide].querySelector('img').alt;
     slideStatus.textContent = `Fotografia ${currentSlide + 1} de ${slides.length}: ${description}`;
+    window.clearTimeout(rotationTimer);
+    rotationTimer = undefined;
+    syncRotation();
   }
 }
 
 function canRotate() {
-  if (document.hidden || reducedMotion.matches) return false;
+  if (document.hidden || reducedMotion.matches || pointerStart
+      || carousel.contains(document.activeElement)) return false;
   const { top, right, bottom, left, width, height } = carousel.getBoundingClientRect();
   return width > 0 && height > 0 && top < window.innerHeight && bottom > 0
     && left < window.innerWidth && right > 0;
@@ -174,6 +261,7 @@ carousel.addEventListener('keydown', event => {
 slideArea.addEventListener('pointerdown', event => {
   if (!event.isPrimary || event.button !== 0 || pointerStart) return;
   pointerStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+  syncRotation();
   slideArea.setPointerCapture(event.pointerId);
 });
 slideArea.addEventListener('pointerup', event => {
@@ -184,9 +272,12 @@ slideArea.addEventListener('pointerup', event => {
   if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
     showSlide(currentSlide + (deltaX < 0 ? 1 : -1));
   }
+  syncRotation();
 });
 function cancelSwipe(event) {
-  if (pointerStart?.id === event.pointerId) pointerStart = null;
+  if (pointerStart?.id !== event.pointerId) return;
+  pointerStart = null;
+  syncRotation();
 }
 slideArea.addEventListener('pointercancel', cancelSwipe);
 slideArea.addEventListener('lostpointercapture', cancelSwipe);
@@ -198,6 +289,8 @@ carousel.tabIndex = 0;
 carousel.setAttribute('aria-describedby', instructions.id);
 instructions.hidden = false;
 
+carousel.addEventListener('focusin', syncRotation);
+carousel.addEventListener('focusout', () => window.setTimeout(syncRotation, 0));
 window.addEventListener('scroll', syncRotation, { passive: true });
 window.addEventListener('resize', syncRotation);
 window.addEventListener('pageshow', syncRotation);

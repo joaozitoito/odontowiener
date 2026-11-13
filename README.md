@@ -8,7 +8,7 @@ O site usa HTML5, CSS e JavaScript puro. É um conjunto de arquivos estáticos, 
 
 - Os seis cards aparecem na ordem **Aparelhos e Alinhadores Ortodônticos**, **Clareamento Dental**, **Facetas em Resina ou Porcelana**, **Implantes Dentários**, **Próteses Removíveis** e **Tratamento de Canal**. No desktop, a navegação mostra três cards por vez; no celular, todos aparecem em coluna.
 - A equipe tem cinco integrantes. Dr. Marcelo Wiener, Nícia Wiener, Luciara, Dra. Paula Menezes e Dr. Igor Guimarães.
-- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Também aceita gesto de deslizar e teclado. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
+- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Aceita gesto de deslizar e teclado, e pausa enquanto contém o foco. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
 
 ## Estrutura
 
@@ -52,7 +52,7 @@ Em hospedagem tradicional, abra o gerenciador de arquivos do painel ou conecte-s
 | Netlify | Raiz do repositório, build `node tools/prepare-demo.cjs`, diretório de publicação `dist`. Para deploy manual, gere o pacote e envie a pasta `dist` no painel. | [Configuração de build](https://docs.netlify.com/build/configure-builds/overview/) · [Deploy manual](https://docs.netlify.com/deploy/create-deploys/) |
 | Cloudflare Pages | Projeto estático, build `node tools/prepare-demo.cjs`, diretório de saída `dist`. Em um projeto de Direct Upload, envie a pasta gerada ou seu ZIP. | [HTML estático](https://developers.cloudflare.com/pages/framework-guides/deploy-anything/) · [Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/) |
 
-Use um navegador moderno com JavaScript habilitado para o menu móvel, o carrossel e a geração dos links de WhatsApp. Google Fonts e o mapa incorporado precisam de internet. A página usa uma fonte de sistema como fallback e oferece um link externo para o mapa. O envio de mensagens ocorre no WhatsApp, por iniciativa do visitante.
+Use um navegador moderno com JavaScript habilitado para o menu móvel, o carrossel e as mensagens predefinidas do WhatsApp. Os links diretos do WhatsApp também funcionam sem JavaScript. Google Fonts e o mapa incorporado precisam de internet. A página usa uma fonte de sistema como fallback e oferece um link externo para o mapa. O envio de mensagens ocorre no WhatsApp, por iniciativa do visitante.
 
 ## Atualizar o conteúdo
 

@@ -9,7 +9,7 @@ async (page, { baseURL = 'http://127.0.0.1:4174' } = {}) => {
     ['03 Facetas em Resina ou Porcelana', 'Alternativas para modificar forma e cor dos dentes, avaliadas individualmente conforme as necessidades de cada sorriso.', 'facetas-em-resina-ou-porcelana', 'Olá! Gostaria de saber mais sobre facetas em resina ou porcelana.'],
     ['04 Implantes Dentários', 'Tratamentos com implantes dentários planejados individualmente para reabilitação oral, após avaliação clínica.', 'implantes-dentarios', 'Olá! Gostaria de saber mais sobre implantes dentários.'],
     ['05 Próteses Removíveis', 'Próteses planejadas para substituir dentes ausentes e apoiar conforto e função, conforme avaliação profissional.', 'proteses-removiveis', 'Olá! Gostaria de saber mais sobre próteses removíveis.'],
-    ['06 Tratamento de Canal', 'Tratamento endodôntico voltado à preservação do dente natural e ao cuidado com sua saúde.', 'tratamento-de-canal', 'Olá! Gostaria de saber mais sobre o tratamento de canal.']
+    ['06 Tratamento de Canal', 'Tratamento endodôntico com instrumentação rotatória mecanizada, voltado à preservação do dente natural e ao cuidado com sua saúde.', 'tratamento-de-canal', 'Olá! Gostaria de saber mais sobre o tratamento de canal.']
   ];
   const photos = ['aparelhos-e-alinhadores-ortodonticos.jpg', 'clareamento-dental.jpg', 'facetas-em-resina-ou-porcelana.jpg', 'implantes-dentarios.jpg', 'proteses-removiveis.jpg', 'tratamento-canal-web.jpg'];
   for (const width of [320, 390, 1440]) {
@@ -27,7 +27,7 @@ async (page, { baseURL = 'http://127.0.0.1:4174' } = {}) => {
         return href && (href.startsWith('#') ? !!document.getElementById(href.slice(1)) : /^(https:|tel:)/.test(href));
       })), width + ': links principais com destinos reais');
 
-      const cards = p.locator('.treatments article');
+      const cards = p.locator('.treatments article:not([aria-hidden])');
       check(await cards.count() === treatments.length, width + ': seis tratamentos');
       for (const [index, [title, description, key, message]] of treatments.entries()) {
         const card = cards.nth(index);
@@ -48,31 +48,40 @@ async (page, { baseURL = 'http://127.0.0.1:4174' } = {}) => {
         const viewport = p.locator('[data-treatment-viewport]');
         const previous = p.locator('[data-treatment-prev]');
         const next = p.locator('[data-treatment-next]');
-        check(await previous.isDisabled() && await next.isEnabled(), width + ': controles iniciam na primeira página');
-        await next.click();
-        await p.waitForFunction(() => !document.querySelector('[data-treatment-prev]').disabled
-          && document.querySelector('[data-treatment-next]').disabled);
-        check(await previous.isEnabled() && await next.isDisabled(), width + ': controles avançam para a segunda página');
-        check(await p.locator('.treatments article').nth(3).evaluate((card, element) => {
+        check(await previous.isEnabled() && await next.isEnabled(), width + ': controles iniciam na primeira página');
+        for (let index = 1; index <= 3; index++) {
+          await next.click();
+          await p.waitForFunction(index => {
+            const cards = document.querySelectorAll(".treatments article:not([aria-hidden])");
+            const viewport = document.querySelector("[data-treatment-viewport]");
+            return Math.abs(cards[index].getBoundingClientRect().left - viewport.getBoundingClientRect().left - 8) < 2;
+          }, index);
+        }
+        check(await p.locator('.treatments article:not([aria-hidden])').nth(3).evaluate((card, element) => {
           const viewport = element.getBoundingClientRect();
           const bounds = card.getBoundingClientRect();
           return bounds.left >= viewport.left - 1 && bounds.right <= viewport.right + 1;
         }, await viewport.elementHandle()), width + ': segundo grupo de cards visível');
-        await previous.click();
-        await p.waitForFunction(() => document.querySelector('[data-treatment-viewport]').scrollLeft === 0);
       } else {
         check(!await p.locator('[data-treatment-prev]').isVisible() && !await p.locator('[data-treatment-next]').isVisible(), width + ': controles horizontais ocultos no mobile');
-        check(await p.locator('.treatments article').evaluateAll(cards => new Set(cards.map(card => card.offsetTop)).size === 6), width + ': seis cards em coluna no mobile');
+        check(await p.locator('.treatments article:not([aria-hidden])').evaluateAll(cards => new Set(cards.map(card => card.offsetTop)).size === 6), width + ': seis cards em coluna no mobile');
       }
       await p.locator('img[loading="lazy"]').evaluateAll(images => images.forEach(img => { img.loading = 'eager'; }));
       await p.waitForFunction(() => [...document.images].every(img => img.complete && img.naturalWidth > 0));
-      check(await p.locator('.carousel img').count() === 10 && await p.locator('.carousel video, .carousel button, .carousel figcaption').count() === 0,
-        width + ': dez fotos da clínica, sem controles ou legendas');
+      check(await p.locator('.carousel img').count() === 10 && await p.locator('.carousel video, .carousel figcaption').count() === 0,
+        width + ': dez fotos da clínica, sem vídeos ou legendas');
       await p.locator('.map-embed').scrollIntoViewIfNeeded();
       await p.frameLocator('.map-embed iframe').getByRole('region', { name: 'Mapa', exact: true }).first().waitFor({ timeout: 20000 });
       check(await p.evaluate(() => document.documentElement.scrollWidth === innerWidth), width + ': layout sem overflow e mapa carregado');
       check(errors.length === 0, width + ': sem erros de console, JS ou HTTP: ' + errors.join(' | '));
     } finally { await p.close(); }
   }
+  const fallback = await browser.newPage({ javaScriptEnabled: false });
+  try {
+    await fallback.goto(baseURL, { waitUntil: 'domcontentloaded' });
+    const whatsappLinks = await fallback.locator('[data-whatsapp]').evaluateAll(links => links.map(link => link.href));
+    check(whatsappLinks.length === 10 && whatsappLinks.every(url => url === 'https://wa.me/5553981298471'),
+      'Todos os links de WhatsApp funcionam sem JavaScript');
+  } finally { await fallback.close(); }
   return { status: 'PASS', browser: browser.version(), results };
 }
