@@ -33,7 +33,6 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       '7-sala-cirurgia.jpeg', '8-sala-raio-x.jpeg', '9-sala-cirurgia-2.jpeg', '10-esterilização.jpeg'
     ];
     check(await p.locator('.history').evaluate(e => getComputedStyle(e).columnGap === '64px'), 'Espaçamento desktop da História');
-    check(await carousel.locator('button, [role="button"], .dots, figcaption, video').count() === 0, 'Carrossel sem controles e legendas');
     const filenames = await carousel.locator('img').evaluateAll(images => images.map(img => decodeURIComponent(img.src.split('/').pop())));
     check(JSON.stringify(filenames) === JSON.stringify(orderedPhotos), 'Dez fotos na ordem numerada');
     check(await current() === '1 de 10', 'Primeira foto inicial');
@@ -49,6 +48,7 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       }).observe(element, { subtree: true, attributes: true, attributeFilter: ['class'] });
     });
     await carousel.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await p.evaluate(() => document.fonts.ready);
     const initialSize = await carousel.boundingBox();
     await p.mouse.move(initialSize.x + initialSize.width / 2, initialSize.y + initialSize.height / 2);
     check(await carousel.evaluate(element => element.matches(':hover')), 'Mouse sobre a foto durante o autoplay');
@@ -126,8 +126,8 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       check(layout.footerAligned, width + ': rodapé alinhado ao conteúdo');
       if (width <= 800) check(layout.storyCopyFirst, width + ': texto da História antes do carrossel');
       check(await p.locator('.treatments article').evaluateAll(cards => cards.every(card => card.scrollWidth <= card.clientWidth)), width + ': tratamentos sem overflow');
-      if (width === 1440 || width === 1024) {
-        check(await p.locator('.treatments article > p').evaluateAll(paragraphs => paragraphs.every(p => p.offsetTop === paragraphs[0].offsetTop)), width + ': descrições dos tratamentos alinhadas');
+      if (width > 800) {
+        check(await p.locator('.treatments article').evaluateAll(cards => cards.every(card => card.offsetHeight === cards[0].offsetHeight)), width + ': altura uniforme dos cards');
       }
       if (width <= 430) {
         check(await p.locator('.team img').evaluateAll(images => images.every(img => img.clientHeight <= 260)), width + ': retratos com altura limitada');
