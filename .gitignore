@@ -6,3 +6,10 @@ assets/videos/local/
 artifacts/
 __pycache__/
 *.pyc
+assets/images_backup/
+*.bak
+*.backup
+*.orig
+*~
+.DS_Store
+Thumbs.db

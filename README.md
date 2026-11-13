@@ -19,7 +19,7 @@ O site usa HTML5, CSS e JavaScript puro. É um conjunto de arquivos estáticos, 
 | `assets/fotos/local/`, `assets/images/` | Fotografias da clínica e dos tratamentos |
 | `assets/logo1.png`, `assets/icons/` | Logo da página e favicon azul |
 | `tools/` | Geração da distribuição e verificações |
-| `docs/` | Histórico técnico. O [relatório de acabamento](docs/final-polish-report.md) descreve uma versão anterior |
+| `docs/` | Histórico técnico. O [relatório de acabamento](docs/final-polish-report.md) é histórico e descreve um protótipo com vídeos, não o site atual |
 | `dist/` | Saída gerada e ignorada pelo Git |
 | `vercel.json` | Configuração da demonstração na Vercel |
 
@@ -42,7 +42,7 @@ Abra [a distribuição isolada](http://127.0.0.1:4174/). Cada build substitui o 
 
 ## Hospedar a distribuição
 
-Envie **o conteúdo** de `dist/` à raiz pública do domínio ou subdomínio, de modo que `index.html` responda em `/`. Preserve a estrutura de `assets/`, os nomes dos arquivos e suas maiúsculas e minúsculas. Um servidor HTTP(S) estático compatível deve servir `index.html` como página inicial e os tipos MIME de HTML, CSS, JavaScript, JPEG, PNG e ICO. HTTPS é recomendado para produção.
+Envie **somente o conteúdo** de `dist/` à raiz pública do domínio ou subdomínio, de modo que `index.html` responda em `/`; não publique a raiz do repositório. Preserve a estrutura de `assets/`, os nomes dos arquivos e suas maiúsculas e minúsculas. Um servidor HTTP(S) estático compatível deve servir `index.html` como página inicial e os tipos MIME de HTML, CSS, JavaScript, JPEG, PNG e ICO. HTTPS é recomendado para produção. Depois do build, Node.js não é necessário no servidor.
 
 Em hospedagem tradicional, abra o gerenciador de arquivos do painel ou conecte-se por SFTP, preferencialmente, ou pelo FTP oferecido pelo provedor. Identifique a raiz pública do domínio, por exemplo `public_html/` quando aplicável, faça backup da versão anterior e envie `index.html`, `style.css`, `script.js` e `assets/` diretamente para essa pasta. Confira a URL pública após o upload. O responsável pela hospedagem define o provedor, domínio e DNS.
 

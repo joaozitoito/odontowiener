@@ -1,4 +1,6 @@
-# Acabamento final — Odonto Wiener
+# Relatório histórico de acabamento — Odonto Wiener
+
+> Este relatório descreve uma rodada anterior e não representa o site aprovado atual. O protótipo com carrossel em vídeo e os resultados de testes abaixo são históricos; consulte o README e os arquivos atuais para comportamento, contatos, ativos e publicação.
 
 Rodada concluída em 03/11/2026, no checkout existente. O complemento do usuário autorizou também o redesign e os recortes do carrossel. Nenhum commit, push ou deploy foi realizado.
 
