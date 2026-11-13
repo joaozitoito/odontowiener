@@ -13,6 +13,7 @@ const mime = {
   '.js': 'text/javascript; charset=utf-8',
   '.jpeg': 'image/jpeg',
   '.jpg': 'image/jpeg',
+  '.webp': 'image/webp',
   '.png': 'image/png',
   '.ico': 'image/x-icon'
 };

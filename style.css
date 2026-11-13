@@ -195,8 +195,6 @@
   [data-treatment-prev]{left:0}
   [data-treatment-next]{right:0}
   .treatment-viewport{padding:10px 8px;scroll-padding-inline:8px}
-  .treatments article:last-child{position:relative}
-  .treatments article:last-child::after{content:"";position:absolute;left:100%;width:8px;height:1px;top:0;pointer-events:none}
 }
 @media(min-width:801px){.treatment-viewport{cursor:grab;user-select:none}.treatment-viewport.is-dragging,.treatment-viewport.is-dragging a{cursor:grabbing}.treatment-viewport::-webkit-scrollbar{display:none}}
 
@@ -210,3 +208,7 @@
   .treatments article .treatment-media,.treatments article h3,.treatments article p{margin:0}
   .treatment-viewport.is-dragging{scroll-snap-type:none}
 }
+.footer-note{display:flex;justify-content:space-between;gap:8px 24px}
+@media(max-width:800px){.footer-note{flex-direction:column}}
+.carousel-pause{position:absolute;z-index:3;right:12px;bottom:12px;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--navy);font:inherit;font-size:13px;cursor:pointer}
+@media(min-width:801px) and (max-width:1100px){.treatments article h3{font-size:18px;overflow-wrap:anywhere}.treatments article p,.treatments article a{overflow-wrap:anywhere}}

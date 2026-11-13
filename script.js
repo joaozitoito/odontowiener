@@ -205,6 +205,13 @@ treatmentViewport.addEventListener('click', event => {
 let currentSlide = 0;
 let pointerStart = null;
 let rotationTimer;
+let rotationPaused = false;
+const rotationToggle = carousel.querySelector('[data-rotation-toggle]');
+rotationToggle.addEventListener('click', () => {
+  rotationPaused = !rotationPaused;
+  rotationToggle.textContent = rotationPaused ? 'Retomar fotos' : 'Pausar fotos';
+  syncRotation();
+});
 
 function showSlide(index, announce = true) {
   currentSlide = (index + slides.length) % slides.length;
@@ -224,7 +231,7 @@ function showSlide(index, announce = true) {
 }
 
 function canRotate() {
-  if (document.hidden || reducedMotion.matches || pointerStart
+  if (document.hidden || reducedMotion.matches || rotationPaused || pointerStart
       || carousel.contains(document.activeElement)) return false;
   const { top, right, bottom, left, width, height } = carousel.getBoundingClientRect();
   return width > 0 && height > 0 && top < window.innerHeight && bottom > 0
@@ -232,6 +239,7 @@ function canRotate() {
 }
 
 function syncRotation() {
+  rotationToggle.hidden = reducedMotion.matches;
   if (!canRotate()) {
     window.clearTimeout(rotationTimer);
     rotationTimer = undefined;

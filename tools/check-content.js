@@ -11,8 +11,8 @@ async (page, { baseURL = 'http://127.0.0.1:4174' } = {}) => {
     ['05 Próteses Removíveis', 'Próteses planejadas para substituir dentes ausentes e apoiar conforto e função, conforme avaliação profissional.', 'proteses-removiveis', 'Olá! Gostaria de saber mais sobre próteses removíveis.'],
     ['06 Tratamento de Canal', 'Tratamento endodôntico com instrumentação rotatória mecanizada, voltado à preservação do dente natural e ao cuidado com sua saúde.', 'tratamento-de-canal', 'Olá! Gostaria de saber mais sobre o tratamento de canal.']
   ];
-  const photos = ['aparelhos-e-alinhadores-ortodonticos.jpg', 'clareamento-dental.jpg', 'facetas-em-resina-ou-porcelana.jpg', 'implantes-dentarios.jpg', 'proteses-removiveis.jpg', 'tratamento-canal-web.jpg'];
-  for (const width of [320, 390, 1440]) {
+  const photos = ['aparelhos-e-alinhadores-ortodonticos.webp', 'clareamento-dental.webp', 'facetas-em-resina-ou-porcelana.webp', 'implantes-dentarios.webp', 'proteses-removiveis.webp', 'tratamento-canal.webp'];
+  for (const width of [320, 375, 768, 1024, 1440]) {
     const p = await browser.newPage({ viewport: { width, height: 1000 } });
     try {
       const errors = [];
@@ -33,7 +33,7 @@ async (page, { baseURL = 'http://127.0.0.1:4174' } = {}) => {
         const card = cards.nth(index);
         check(await card.locator('h3').textContent() === title && await card.locator('p').textContent() === description, width + ': ' + title);
         const photo = card.locator('img');
-        check(await photo.getAttribute('src') === 'assets/images/' + photos[index] && !!await photo.getAttribute('alt'), width + ': foto real com descrição em ' + key);
+        check((await photo.getAttribute('src')).split('?')[0] === 'assets/images/' + photos[index] && !!await photo.getAttribute('alt'), width + ': foto real com descrição em ' + key);
         const link = card.locator('a');
         const url = new URL(await link.getAttribute('href'));
         check(await link.getAttribute('data-whatsapp') === key && url.searchParams.get('text') === message, width + ': mensagem de ' + key);

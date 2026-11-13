@@ -8,7 +8,7 @@ O site usa HTML5, CSS e JavaScript puro. É um conjunto de arquivos estáticos, 
 
 - Os seis cards aparecem na ordem **Aparelhos e Alinhadores Ortodônticos**, **Clareamento Dental**, **Facetas em Resina ou Porcelana**, **Implantes Dentários**, **Próteses Removíveis** e **Tratamento de Canal**. No desktop, a navegação mostra três cards por vez; no celular, todos aparecem em coluna.
 - A equipe tem cinco integrantes. Dr. Marcelo Wiener, Nícia Wiener, Luciara, Dra. Paula Menezes e Dr. Igor Guimarães.
-- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Aceita gesto de deslizar e teclado, e pausa enquanto contém o foco. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
+- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Aceita gesto de deslizar e teclado, pausa enquanto contém o foco e oferece um botão de pausa persistente durante a navegação na página. O botão fica oculto quando há preferência por movimento reduzido. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
 
 ## Estrutura
 
@@ -81,3 +81,5 @@ node tools/check-site.cjs --static-only
 A verificação estática compara o inventário de `dist/` com as referências locais e os ícones complementares. Para executar `check-release.js` e `check-content.js` em um navegador, disponibilize Playwright no ambiente de testes e rode `node tools/check-site.cjs`. O executor abre Chromium e serve apenas `dist/` em uma porta local. As capturas ficam em `artifacts/release/`, fora do pacote publicado.
 
 Para preparar um ambiente de teste sem adicionar um manifesto ao projeto, use `npm install --no-save --package-lock=false playwright` e `npx playwright install chromium`. Se já tiver uma instalação de Playwright, `ODONTO_PLAYWRIGHT_MODULE` pode apontar para o módulo. Use `ODONTO_BROWSER_EXECUTABLE` para indicar um Chrome ou Chromium instalado. Playwright é opcional e serve apenas à verificação local.
+
+As seis imagens de tratamentos publicadas usam WebP com 1200 px de largura, mantendo as proporções e os enquadramentos. O conjunto passou de 13.496.265 para 818.604 bytes (93,9% menor). Os JPEG originais ficam no repositório e são excluídos da distribuição. As imagens dos tratamentos são ilustrativas e não identificam casos clínicos da Odonto Wiener.

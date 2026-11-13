@@ -49,6 +49,10 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     });
     await carousel.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await p.evaluate(() => document.fonts.ready);
+    await carousel.evaluate(async element => {
+      await new Promise(requestAnimationFrame);
+      await Promise.all(element.getAnimations().map(animation => animation.finished));
+    });
     const initialSize = await carousel.boundingBox();
     await p.mouse.move(initialSize.x + initialSize.width / 2, initialSize.y + initialSize.height / 2);
     check(await carousel.evaluate(element => element.matches(':hover')), 'Mouse sobre a foto durante o autoplay');
@@ -57,9 +61,25 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       await p.waitForFunction(({ index, label }) => window.carouselChanges[index] === label, { index, label }, { timeout: 9000 });
       check(true, 'Avanço automático para a foto ' + position);
       const size = await carousel.boundingBox();
-      check(size.width === initialSize.width && size.height === initialSize.height, 'Tamanho estável na foto ' + position);
+      check(size.width === initialSize.width && size.height === initialSize.height, 'Tamanho estável na foto ' + position + ' inicial=' + JSON.stringify(initialSize) + ' atual=' + JSON.stringify(size));
     }
+    const pause = carousel.getByRole('button', { name: 'Pausar fotos' });
+    await pause.focus();
+    await p.keyboard.press('Enter');
+    const pausedLabel = await current();
+    await p.locator('#inicio').scrollIntoViewIfNeeded();
+    await p.evaluate(() => document.activeElement.blur());
+    await carousel.scrollIntoViewIfNeeded();
+    await p.waitForTimeout(4400);
+    check(await current() === pausedLabel, 'Pausa persiste após navegar pela página');
+    await carousel.getByRole('button', { name: 'Retomar fotos' }).focus();
+    await p.keyboard.press('Space');
+    await p.evaluate(() => document.activeElement.blur());
+    await p.waitForFunction(label => document.querySelector('.slide.is-active').getAttribute('aria-label') !== label, pausedLabel);
+    check(true, 'Retomada por teclado reativa autoplay');
     await p.emulateMedia({ reducedMotion: 'reduce' });
+    await pause.waitFor({ state: 'hidden' });
+    check(await pause.isHidden(), 'Preferência de movimento reduzido oculta controle de autoplay');
     await carousel.press('Home');
     await p.waitForTimeout(4400);
     check(await current() === '1 de 10' && await active.evaluate(e => getComputedStyle(e).transitionDuration === '0s'), 'Movimento reduzido desativa autoplay e transições');
