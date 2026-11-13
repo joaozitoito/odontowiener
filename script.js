@@ -80,6 +80,16 @@ if ('IntersectionObserver' in window) {
 const carousel = document.querySelector('#clinica .history > .carousel');
 const slideArea = carousel.querySelector('.slides');
 const slides = [...slideArea.querySelectorAll('.slide')];
+const clinicArrows = carousel.querySelector('.clinic-carousel-arrows');
+const clinicDots = carousel.querySelector('.clinic-carousel-dots');
+const slideDots = slides.map((slide, index) => {
+  const dot = document.createElement('button');
+  dot.type = 'button';
+  dot.setAttribute('aria-label', `Ver fotografia ${index + 1}: ${slide.querySelector('img').alt}`);
+  dot.setAttribute('aria-controls', slideArea.id);
+  dot.addEventListener('click', () => showSlide(index));
+  return dot;
+});
 const slideStatus = carousel.querySelector('[data-slide-status]');
 const instructions = carousel.querySelector('#carousel-instructions');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -213,6 +223,8 @@ function showSlide(index, announce = true) {
     slide.classList.toggle('is-active', active);
     slide.setAttribute('aria-hidden', String(!active));
     slide.inert = !active;
+    if (active) slideDots[position].setAttribute('aria-current', 'true');
+    else slideDots[position].removeAttribute('aria-current');
   });
   if (announce) {
     const description = slides[currentSlide].querySelector('img').alt;
@@ -224,9 +236,8 @@ function showSlide(index, announce = true) {
 }
 
 function canRotate() {
-  if (document.hidden || reducedMotion.matches || pointerStart
-      || carousel.contains(document.activeElement)) return false;
-  const { top, right, bottom, left, width, height } = carousel.getBoundingClientRect();
+  if (document.hidden || reducedMotion.matches || pointerStart) return false;
+  const { top, right, bottom, left, width, height } = slideArea.getBoundingClientRect();
   return width > 0 && height > 0 && top < window.innerHeight && bottom > 0
     && left < window.innerWidth && right > 0;
 }
@@ -250,6 +261,9 @@ function syncRotation() {
     syncRotation();
   }, rotationDelay);
 }
+
+clinicArrows.querySelector('[data-clinic-prev]').addEventListener('click', () => showSlide(currentSlide - 1));
+clinicArrows.querySelector('[data-clinic-next]').addEventListener('click', () => showSlide(currentSlide + 1));
 
 carousel.addEventListener('keydown', event => {
   const actions = { ArrowLeft: currentSlide - 1, ArrowRight: currentSlide + 1, Home: 0, End: slides.length - 1 };
@@ -285,12 +299,13 @@ slideArea.addEventListener('dragstart', event => event.preventDefault());
 
 showSlide(0, false);
 carousel.classList.add('enhanced');
+clinicDots.append(...slideDots);
+clinicArrows.hidden = false;
+clinicDots.hidden = false;
 carousel.tabIndex = 0;
 carousel.setAttribute('aria-describedby', instructions.id);
 instructions.hidden = false;
 
-carousel.addEventListener('focusin', syncRotation);
-carousel.addEventListener('focusout', () => window.setTimeout(syncRotation, 0));
 window.addEventListener('scroll', syncRotation, { passive: true });
 window.addEventListener('resize', syncRotation);
 window.addEventListener('pageshow', syncRotation);
@@ -299,6 +314,6 @@ document.addEventListener('visibilitychange', syncRotation);
 if (typeof IntersectionObserver === 'function') {
   // Mudanças de layout podem mover o carrossel sem rolagem ou redimensionamento.
   const carouselObserver = new IntersectionObserver(syncRotation);
-  carouselObserver.observe(carousel);
+  carouselObserver.observe(slideArea);
 }
 syncRotation();

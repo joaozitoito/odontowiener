@@ -18,7 +18,15 @@
 }
 
 /* Carrossel fotográfico na mesma posição da seção História. */
-.history>.carousel{position:relative;min-width:0;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:12px;background:#eaf2fb}
+.history>.carousel{position:relative;min-width:0;width:100%}
+.clinic-carousel-media{
+  position:relative;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  border-radius:var(--radius-card);
+  background:#eaf2fb;
+  box-shadow:0 24px 48px rgba(16,36,61,.08);
+}
 .history .slides{position:absolute;inset:0}
 .history .enhanced .slides{touch-action:pan-y pinch-zoom}
 .history .slide{position:absolute;inset:0;margin:0;opacity:0;visibility:hidden;pointer-events:none}
@@ -103,7 +111,7 @@
 .history .carousel:focus-visible{
   outline-offset:4px;
 }
-.history-copy{max-width:520px}.history-copy .lead{font-size:18px}.history-copy h2{margin-bottom:20px}.history>.carousel{position:relative;min-width:0;width:100%;aspect-ratio:4/3;overflow:hidden;border-radius:12px;background:#eaf2fb;box-shadow:0 24px 48px rgba(16,36,61,.08)}.history .slides{position:absolute;inset:0}.history .enhanced .slides{touch-action:pan-y pinch-zoom}.history .slide{position:absolute;inset:0;margin:0;opacity:0;visibility:hidden;pointer-events:none}.history .carousel:not(.enhanced) .slide:first-child{opacity:1;visibility:visible}.history .enhanced .slide{transition:opacity 0s 500ms,visibility 0s 500ms}.history .enhanced .slide.is-active{z-index:1;opacity:1;visibility:visible;transition:opacity 500ms ease}.history .slide img{width:100%;height:100%;object-fit:cover}.history .slide .clinic-facade{object-position:50% 76%;transform-origin:50% 15%}.history .slide .clinic-waiting-room{object-position:50% 32%}.reveal-item{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease,box-shadow .2s ease;transition-delay:var(--reveal-delay,0ms)}.reveal-item.is-visible{opacity:1;transform:none}.button,.header nav>a:not(.button),.footer nav a,.text-link,.treatments article,.team article,.map-card,.history>.carousel,.history-copy,.section-heading{will-change:transform,box-shadow,opacity}
+.history-copy{max-width:520px}.history-copy .lead{font-size:18px}.history-copy h2{margin-bottom:20px}.history .slides{position:absolute;inset:0}.history .enhanced .slides{touch-action:pan-y pinch-zoom}.history .slide{position:absolute;inset:0;margin:0;opacity:0;visibility:hidden;pointer-events:none}.history .carousel:not(.enhanced) .slide:first-child{opacity:1;visibility:visible}.history .enhanced .slide{transition:opacity 0s 500ms,visibility 0s 500ms}.history .enhanced .slide.is-active{z-index:1;opacity:1;visibility:visible;transition:opacity 500ms ease}.history .slide img{width:100%;height:100%;object-fit:cover}.history .slide .clinic-facade{object-position:50% 76%;transform-origin:50% 15%}.history .slide .clinic-waiting-room{object-position:50% 32%}.reveal-item{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease,box-shadow .2s ease;transition-delay:var(--reveal-delay,0ms)}.reveal-item.is-visible{opacity:1;transform:none}.button,.header nav>a:not(.button),.footer nav a,.text-link,.treatments article,.team article,.map-card,.history>.carousel,.history-copy,.section-heading{will-change:transform,box-shadow,opacity}
 @media(hover:hover){
   .treatments article:hover{
     border-color:#c5d5e5;
@@ -169,10 +177,63 @@
 }
 
 .treatment-carousel-controls{display:flex;justify-content:flex-end;gap:8px;margin:-20px 0 12px}
-.treatment-carousel-controls button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--navy);font-size:24px;line-height:1;transition:background-color var(--motion-fast),color var(--motion-fast),border-color var(--motion-fast)}
-.treatment-carousel-controls button:hover:not(:disabled){border-color:var(--blue);background:var(--blue);color:#fff}
+:is(.treatment-carousel-controls,.clinic-carousel-arrows) button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:50%;background:#fff;color:var(--navy);font-size:24px;line-height:1;transition:background-color var(--motion-fast),color var(--motion-fast),border-color var(--motion-fast)}
+:is(.treatment-carousel-controls,.clinic-carousel-arrows) button:hover:not(:disabled){border-color:var(--blue);background:var(--blue);color:#fff}
 .treatment-carousel-controls button:disabled{opacity:.42;cursor:default}
 .treatment-carousel-controls[hidden]{display:none}
+:is(.treatment-carousel-controls,.clinic-carousel-arrows) button::before{
+  content:"";
+  width:10px;
+  height:10px;
+  border-top:2px solid currentColor;
+  border-right:2px solid currentColor;
+  border-top-right-radius:1px;
+}
+:is([data-treatment-prev],[data-clinic-prev])::before{transform:translateX(2px) rotate(-135deg)}
+:is([data-treatment-next],[data-clinic-next])::before{transform:translateX(-2px) rotate(45deg)}
+.clinic-carousel-arrows button,
+.clinic-carousel-dots button{touch-action:manipulation}
+.clinic-carousel-arrows button{
+  position:absolute;
+  inset-block-start:50%;
+  z-index:2;
+  transform:translateY(-50%);
+  color:var(--blue);
+}
+[data-clinic-prev]{inset-inline-start:12px}
+[data-clinic-next]{inset-inline-end:12px}
+@media(max-width:800px),(hover:none) and (pointer:coarse){
+  .clinic-carousel-arrows{display:none}
+}
+.clinic-carousel-dots{
+  display:flex;
+  justify-content:center;
+  margin-block-start:12px;
+}
+@media(min-width:801px){.clinic-carousel-dots{justify-content:space-between}}
+.clinic-carousel-dots[hidden]{display:none}
+.clinic-carousel-dots button{
+  display:grid;
+  place-items:center;
+  width:clamp(24px,7.5vw,30px);
+  height:28px;
+  padding:0;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+}
+.clinic-carousel-dots button::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#637e9b;
+  transition:width var(--motion-fast),background-color var(--motion-fast);
+}
+.clinic-carousel-dots button:hover::before,
+.clinic-carousel-dots button[aria-current="true"]::before{background:var(--blue)}
+.clinic-carousel-dots button[aria-current="true"]::before{width:18px}
+.clinic-carousel-dots button:focus-visible{outline-offset:-2px}
 .treatment-viewport{overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;padding:8px 0;margin:-8px 0}
 .treatments{grid-template-columns:none;grid-template-rows:repeat(4,auto);grid-auto-columns:calc((100% - 48px)/3);grid-auto-flow:column;grid-auto-rows:auto;gap:24px}
 .treatments article{scroll-snap-align:start}

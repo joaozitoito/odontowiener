@@ -27,6 +27,10 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     const carousel = p.locator('.history > .carousel');
     const active = carousel.locator('.slide.is-active');
     const current = async () => active.getAttribute('aria-label');
+    const previous = carousel.getByRole('button', { name: 'Fotografia anterior' });
+    const next = carousel.getByRole('button', { name: 'Próxima fotografia' });
+    const dots = carousel.getByRole('group', { name: 'Escolher fotografia' }).getByRole('button');
+    const currentDot = carousel.locator('[aria-current="true"]');
     const orderedPhotos = [
       '1-fachada.jpeg', '2-recepção (entrada).jpeg', '3-consultorionicia (2).jpeg',
       '4-consultorionicia.jpeg', '5-recepção2 quadros.jpeg', '6-recepção2.jpeg',
@@ -35,6 +39,9 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     check(await p.locator('.history').evaluate(e => getComputedStyle(e).columnGap === '64px'), 'Espaçamento desktop da História');
     const filenames = await carousel.locator('img').evaluateAll(images => images.map(img => decodeURIComponent(img.src.split('/').pop())));
     check(JSON.stringify(filenames) === JSON.stringify(orderedPhotos), 'Dez fotos na ordem numerada');
+    check(await previous.isVisible() && await next.isVisible(), 'Setas visíveis no carrossel');
+    check(await dots.count() === orderedPhotos.length && await currentDot.count() === 1
+      && await dots.first().getAttribute('aria-current') === 'true', 'Um indicador por fotografia e primeira posição marcada');
     check(await current() === '1 de 10', 'Primeira foto inicial');
     check(await active.evaluate(e => parseFloat(getComputedStyle(e).transitionDuration) > 0), 'Transição entre as fotos');
     await carousel.evaluate(element => {
@@ -43,7 +50,11 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       new MutationObserver(() => {
         const current = element.querySelector('.is-active');
         if (current === previous) return;
-        window.carouselChanges.push(current.getAttribute('aria-label'));
+        const indicators = [...element.querySelectorAll('.clinic-carousel-dots button')];
+        window.carouselChanges.push({
+          label: current.getAttribute('aria-label'),
+          selected: indicators.flatMap((dot, position) => dot.getAttribute('aria-current') === 'true' ? [position + 1] : [])
+        });
         previous = current;
       }).observe(element, { subtree: true, attributes: true, attributeFilter: ['class'] });
     });
@@ -58,12 +69,30 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     check(await carousel.evaluate(element => element.matches(':hover')), 'Mouse sobre a foto durante o autoplay');
     for (const [index, position] of [2, 3, 4, 5, 6, 7, 8, 9, 10, 1].entries()) {
       const label = position + ' de 10';
-      await p.waitForFunction(({ index, label }) => window.carouselChanges[index] === label, { index, label }, { timeout: 9000 });
+      await p.waitForFunction(({ index, label }) => window.carouselChanges[index]?.label === label, { index, label }, { timeout: 9000 });
       check(true, 'Avanço automático para a foto ' + position);
+      check(JSON.stringify(await p.evaluate(index => window.carouselChanges[index].selected, index)) === JSON.stringify([position]),
+        'Indicador acompanha o autoplay na foto ' + position);
       const size = await carousel.boundingBox();
       check(size.width === initialSize.width && size.height === initialSize.height, 'Tamanho estável na foto ' + position + ' inicial=' + JSON.stringify(initialSize) + ' atual=' + JSON.stringify(size));
     }
-    check(await carousel.getByRole('button').count() === 0, 'Carrossel sem botão de pausa');
+    check(await carousel.getByRole('button').count() === orderedPhotos.length + 2, 'Controles restritos às setas e aos indicadores');
+    await dots.nth(4).click();
+    check(await current() === '5 de 10', 'Indicador abre a fotografia correspondente');
+    await carousel.locator('.slide.is-active[aria-label="6 de 10"]').waitFor({ timeout: 6500 });
+    check(true, 'Autoplay continua após clicar no indicador');
+    await p.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await p.waitForTimeout(4400);
+    check(await current() === '6 de 10', 'Aba inativa suspende o autoplay');
+    await p.evaluate(() => {
+      delete document.hidden;
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await carousel.locator('.slide.is-active[aria-label="7 de 10"]').waitFor({ timeout: 6500 });
+    check(true, 'Autoplay retoma quando a aba volta a ficar ativa');
     await p.emulateMedia({ reducedMotion: 'reduce' });
     await carousel.press('Home');
     await p.waitForTimeout(4400);
@@ -75,11 +104,32 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     }
     check((await carousel.locator('[data-slide-status]').textContent()).includes('10 de 10')
       && await carousel.locator('.slide[aria-hidden="true"]').count() === 9, 'Anúncio acessível e ocultação dos slides inativos');
+    await next.click();
+    check(await current() === '1 de 10', 'Seta direita volta à primeira fotografia');
+    await previous.press('Enter');
+    check(await current() === '10 de 10', 'Seta esquerda volta à última fotografia com o teclado');
 
-    const touch = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+    const touch = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
     try {
       touch.on('pageerror', e => errors.push(e.message));
       await touch.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await touch.bringToFront();
+      await touch.evaluate(() => document.fonts.ready);
+      const touchCarousel = touch.locator('.history > .carousel');
+      await touchCarousel.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      check(!await touchCarousel.locator('[data-clinic-prev]').isVisible()
+        && !await touchCarousel.locator('[data-clinic-next]').isVisible(), 'Setas ocultas no celular');
+      for (const position of [2, 3]) {
+        await touchCarousel.locator(`.slide.is-active[aria-label="${position} de 10"]`).waitFor({ timeout: 6500 });
+      }
+      check(true, 'Autoplay continua no celular sem interação');
+      const touchDots = touchCarousel.getByRole('group', { name: 'Escolher fotografia' }).getByRole('button');
+      await touchDots.last().tap();
+      await touchCarousel.locator('.slide.is-active[aria-label="10 de 10"]').waitFor({ timeout: 2000 });
+      check(true, 'Indicadores funcionam por toque');
+      await touchCarousel.locator('.slide.is-active[aria-label="1 de 10"]').waitFor({ timeout: 6500 });
+      check(true, 'Autoplay continua após escolher foto no celular e volta à primeira');
+      await touch.emulateMedia({ reducedMotion: 'reduce' });
       const photos = touch.locator('.slides');
       await photos.scrollIntoViewIfNeeded();
       const box = await photos.boundingBox();
@@ -94,7 +144,10 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       for (let shift = -45; shift <= 65; shift += 22) await send('touchMove', [{ x: center.x + shift, y: center.y }]);
       await send('touchEnd', []);
       check(await touch.locator('.slide.is-active').getAttribute('aria-label') === '1 de 10', 'Deslize de volta em tela de toque');
-    } finally { await touch.close(); }
+    } finally {
+      await touch.close();
+      await p.bringToFront();
+    }
 
     const map = p.locator('.map-embed iframe');
     await map.scrollIntoViewIfNeeded();
@@ -105,6 +158,8 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
     await p.waitForFunction(() => [...document.images].every(img => img.complete && img.naturalWidth > 0));
     for (const [width, expectedRows] of [[1440, [5]], [1024, [3, 2]], [801, [3, 2]], [800, [3, 2]], [768, [3, 2]], [430, [1, 1, 1, 1, 1]], [390, [1, 1, 1, 1, 1]], [375, [1, 1, 1, 1, 1]], [320, [1, 1, 1, 1, 1]]]) {
       await p.setViewportSize({ width, height: 1000 });
+      await p.waitForFunction(expected => document.querySelectorAll('.treatments article[aria-hidden="true"]').length === expected,
+        width <= 800 ? 0 : 12);
       const rows = await p.locator('.team article').evaluateAll(cards => {
         const byTop = Map.groupBy(cards, card => card.offsetTop);
         return [...byTop.values()].map(row => row.length);
@@ -170,8 +225,13 @@ async (page, { baseURL = 'http://127.0.0.1:4173', shots = 'artifacts/release' } 
       return results;
     });
     check(icons.every(i => i.ok), 'PNG 16/32 com transparência e símbolo presente');
-    const ico = await (await p.request.get(new URL('/assets/icons/favicon.ico', baseURL).href)).body();
-    check(ico.readUInt16LE(2) === 1 && ico.readUInt16LE(4) === 3, 'ICO contém três dimensões');
+    const ico = await p.evaluate(async () => {
+      const response = await fetch(document.querySelector('link[rel="icon"][href*=".ico"]').href);
+      if (!response.ok) throw Error('Favicon ICO: HTTP ' + response.status);
+      return Array.from(new Uint8Array(await response.arrayBuffer()).slice(0, 6));
+    });
+    const icoHeader = Buffer.from(ico);
+    check(icoHeader.length === 6 && icoHeader.readUInt16LE(2) === 1 && icoHeader.readUInt16LE(4) === 3, 'ICO contém três dimensões');
     await p.locator('#favicon-preview').screenshot({ path: shots + '/favicon-preview.png' });
     check(errors.length === 0, 'Sem erros de console ou JavaScript: ' + errors.join(' | '));
     return { status: 'PASS', browser: browser.version(), checks };

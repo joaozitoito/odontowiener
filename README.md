@@ -1,6 +1,6 @@
 # Odonto Wiener
 
-Landing page estática da clínica Odonto Wiener, em Pelotas. Apresenta os tratamentos, a história da clínica, a equipe e os canais de contato. A [Vercel](https://odontowiener.vercel.app/) hospeda a demonstração temporária. O provedor definitivo ainda será definido pelo responsável pela hospedagem.
+Landing page estática da clínica Odonto Wiener, em Pelotas. Apresenta os tratamentos, a história da clínica, a equipe e os canais de contato. A implantação atual na [Vercel](https://odontowiener.vercel.app/) é uma demonstração temporária, não a hospedagem de produção. Quem assumir o projeto define provedor, domínio e DNS; as instruções para gerar e publicar a distribuição estão abaixo.
 
 O site usa HTML5, CSS e JavaScript puro. É um conjunto de arquivos estáticos, sem framework, backend, banco de dados ou dependências de execução. No fluxo de publicação, Node.js só é usado para gerar a distribuição. O servidor de produção serve os arquivos por HTTP(S) e dispensa um processo Node.js.
 
@@ -8,7 +8,7 @@ O site usa HTML5, CSS e JavaScript puro. É um conjunto de arquivos estáticos, 
 
 - Os seis cards aparecem na ordem **Aparelhos e Alinhadores Ortodônticos**, **Clareamento Dental**, **Facetas em Resina ou Porcelana**, **Implantes Dentários**, **Próteses Removíveis** e **Tratamento de Canal**. No desktop, a navegação mostra três cards por vez; no celular, todos aparecem em coluna.
 - A equipe tem cinco integrantes. Dr. Marcelo Wiener, Nícia Wiener, Luciara, Dra. Paula Menezes e Dr. Igor Guimarães.
-- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando visível, com fade e zoom Ken Burns de 100% a 105%. Aceita gesto de deslizar e teclado, pausa enquanto contém o foco. O autoplay e o movimento visual são desativados quando o visitante prefere movimento reduzido.
+- A seção História exibe dez fotografias, da fachada à sala de esterilização, na ordem numerada de `assets/fotos/local/`. O carrossel avança a cada quatro segundos quando está visível e a aba está ativa, com fade e zoom Ken Burns de 100% a 105%. Aceita deslize, teclado e seleção pelos dez indicadores. As setas aparecem no desktop. Depois da seleção manual, o autoplay continua. A preferência por movimento reduzido desativa a rotação automática e as animações.
 
 ## Estrutura
 
